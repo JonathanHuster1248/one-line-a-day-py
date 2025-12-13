@@ -1,0 +1,15 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Databases in data
+# TODO: Update this to only OMIT .py files instead
+/src/data/*.json
+/src/data/*.sql

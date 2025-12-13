@@ -1,0 +1,72 @@
+from __future__ import annotations
+
+from datetime import date
+from typing import List, Dict
+from uuid import UUID
+
+from litestar import Controller, get, post, put, delete
+from litestar.params import Body
+from litestar.di import Provide
+
+from .model import JournalCreate, JournalEntry, JournalUpdate
+from .settings import settings, DbType
+from .data.json_back import JsonDb
+from .data.sql_back import SqlDb
+
+db_map = {
+    DbType.JSON: JsonDb,
+    DbType.SQL: SqlDb,
+}
+db_class = db_map[settings.db_type]
+
+test_journal = JournalEntry(date=date.today(), message="Wow today was so cool")
+DB: Dict[UUID, JournalEntry] = {test_journal.id:test_journal}  
+
+
+# ============================================================
+# Controller (Organized Routing)
+# ============================================================
+
+class EntryController(Controller):
+    path = "/"
+
+    @get("/")
+    async def hello_world(self) -> dict:
+        return {"hello":"world"}
+
+# TODO: Use Litestar's dependency injection for this instead
+class JournalController(Controller):
+    path = "/journals"
+
+    # CREATE
+    @post("/")
+    async def create_journal(self, data: JournalCreate) -> JournalEntry:
+        entry = await db_class.insert(data)
+        return entry
+
+    # READ ALL
+    @get("/")
+    async def list_journals(self) -> List[JournalEntry]:
+        entries = await db_class.list()
+        return entries
+
+    # READ ONE
+    @get("/{entry_id:uuid}")
+    async def get_journal(self, entry_id: UUID) -> JournalEntry:
+        entry = await db_class.get(entry_id)
+        return entry
+
+    # UPDATE
+    @put("/{entry_id:uuid}")
+    async def update_journal(
+        self, entry_id: UUID, data: JournalUpdate = Body()
+    ) -> JournalEntry:
+        entry = await db_class.update(entry_id, data)
+        return entry
+
+    # DELETE
+    @delete("/{entry_id:uuid}")
+    async def delete_journal(self, entry_id: UUID) -> None:
+        await db_class.delete(entry_id)
+
+
