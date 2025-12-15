@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Dict
 from uuid import UUID
 
 from litestar import Controller, get, post, put, delete
@@ -20,12 +19,8 @@ db_map = {
 db_class = db_map[settings.db_type]
 
 test_journal = JournalEntry(date=date.today(), message="Wow today was so cool")
-DB: Dict[UUID, JournalEntry] = {test_journal.id:test_journal}  
+DB: dict[UUID, JournalEntry] = {test_journal.id:test_journal}  
 
-
-# ============================================================
-# Controller (Organized Routing)
-# ============================================================
 
 class EntryController(Controller):
     path = "/"
@@ -46,7 +41,7 @@ class JournalController(Controller):
 
     # READ ALL
     @get("/")
-    async def list_journals(self) -> List[JournalEntry]:
+    async def list_journals(self) -> list[JournalEntry]:
         entries = await db_class.list()
         return entries
 

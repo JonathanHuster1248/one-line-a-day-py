@@ -9,7 +9,15 @@ wheels/
 # Virtual environments
 .venv
 
+# VS Code
+.vscode
+
+
 # Databases in data
 # TODO: Update this to only OMIT .py files instead
-/src/data/*.json
-/src/data/*.sql
+/**/data/*.json
+/**/data/*.sql
+
+uv.lock
+
+

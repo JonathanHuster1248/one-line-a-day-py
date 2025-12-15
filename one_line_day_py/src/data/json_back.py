@@ -9,7 +9,7 @@ from ..settings import settings, DbType
 json_db_type = dict[UUID, JournalEntry]
 if settings.db_type == DbType.JSON:
     try: 
-        with open(settings.db_path, "w") as file:
+        with open(settings.db_path, "r") as file:
             raw_db = json.load(file)
         DB: json_db_type = {id:JournalEntry(**entry) for id, entry in raw_db.items()}
     except FileNotFoundError:
@@ -27,7 +27,7 @@ class JsonDb(Database):
         await self.write_file()
         return entry
 
-    async def list(self, **kwargs) -> List[JournalEntry]:
+    async def list(self, **kwargs) -> list[JournalEntry]:
         list(self.db.values())
 
     async def get(self, entry_id: UUID) -> JournalEntry:

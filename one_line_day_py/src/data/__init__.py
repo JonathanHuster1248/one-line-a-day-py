@@ -8,7 +8,7 @@ class Database(Protocol):
     async def insert(self, data: JournalCreate) -> JournalEntry:
         ...
 
-    async def list(self, **kwargs) -> List[JournalEntry]:
+    async def list(self, **kwargs) -> list[JournalEntry]:
         ...
 
     async def get(self, entry_id: UUID) -> JournalEntry:

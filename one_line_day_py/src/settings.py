@@ -6,7 +6,7 @@ class DbType(StrEnum):
     JSON = "json"
     SQL = "sql"
 
-DEFAULT_DB_PATH = Path(__file__).parent / "data" / "test_db.json"
+DEFAULT_DB_PATH = str(Path(__file__).parent / "data" / "test_db.json")
 
 class CoreSettings(BaseSettings):
     db_type: DbType = DbType.JSON

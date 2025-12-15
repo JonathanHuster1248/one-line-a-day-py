@@ -2,7 +2,7 @@ from uuid import UUID
 
 from . import Database
 from ..model import JournalUpdate, JournalCreate, JournalEntry
-from ..settings import settings, DbType
+from ..settings import settings
 
 
 # TODO: Actually point this to an SQL database using an ORM
@@ -13,7 +13,7 @@ class SqlDb(Database):
     async def insert(self, data: JournalCreate) -> JournalEntry:
         pass 
 
-    async def list(self, **kwargs) -> List[JournalEntry]:
+    async def list(self, **kwargs) -> list[JournalEntry]:
         pass
 
     async def get(self, entry_id: UUID) -> JournalEntry:
