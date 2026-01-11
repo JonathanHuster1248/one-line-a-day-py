@@ -3,6 +3,8 @@ One line a day
 	- Adding data
 	- removing data
 	- retrieving data
+	- Searching data
+	- Tagging People/Groups
 - Dockerize
 - Enable storage off the docker image
 - Enable photo storage
