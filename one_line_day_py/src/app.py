@@ -4,6 +4,7 @@ from datetime import date
 from uuid import UUID
 
 from litestar import Controller, get, post, put, delete
+from litestar.response import File
 from litestar.params import Body
 from litestar.di import Provide
 
@@ -28,6 +29,11 @@ class EntryController(Controller):
     @get("/")
     async def hello_world(self) -> dict:
         return {"hello":"world"}
+    
+    @get("/favicon.ico")
+    async def get_favicon(self) -> File:
+        return File(path="one_line_day_py/static/favicon.ico")
+
 
 # TODO: Use Litestar's dependency injection for this instead
 class JournalController(Controller):
