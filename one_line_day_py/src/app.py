@@ -6,6 +6,9 @@ from litestar import Controller, get, post, put, delete
 from litestar.response import File
 from litestar.params import Body
 
+from datetime import date
+from typing import Optional, Iterable
+
 from .model import JournalCreate, JournalEntry, JournalUpdate
 from .settings import settings, DbType
 from .data.json_back import JsonDb
@@ -35,7 +38,8 @@ class JournalController(Controller):
 
     # CREATE
     @post("/")
-    async def create_journal(self, data: JournalCreate) -> JournalEntry:
+    async def create_journal(self, date: date, message: str, photos: Iterable[str] = ()) -> JournalEntry:
+        data = JournalCreate(date=date, message=message, photos=list(photos))
         entry = await db_class.insert(data)
         return entry
 
@@ -54,9 +58,11 @@ class JournalController(Controller):
     # UPDATE
     @put("/{entry_id:uuid}")
     async def update_journal(
-        self, entry_id: UUID, data: JournalUpdate = Body()
+        self, entry_id: UUID, date: Optional[date] = None, message: Optional[str] = None, photos: Iterable[str] = ()
     ) -> JournalEntry:
-        entry = await db_class.update(entry_id, data)
+        # TODO: identify if I want to have photos overwrite or append. Defaulting to overwrite for now
+        updated_data = JournalUpdate(date=date, message=message, photos=photos)
+        entry = await db_class.update(entry_id, updated_data)
         return entry
 
     # DELETE
