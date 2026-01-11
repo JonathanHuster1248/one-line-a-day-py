@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from datetime import date
 from uuid import UUID
 
 from litestar import Controller, get, post, put, delete
 from litestar.response import File
 from litestar.params import Body
-from litestar.di import Provide
 
 from .model import JournalCreate, JournalEntry, JournalUpdate
 from .settings import settings, DbType
@@ -18,10 +16,6 @@ db_map = {
     DbType.SQL: SqlDb,
 }
 db_class = db_map[settings.db_type]
-
-test_journal = JournalEntry(date=date.today(), message="Wow today was so cool")
-DB: dict[UUID, JournalEntry] = {test_journal.id:test_journal}  
-
 
 class EntryController(Controller):
     path = "/"

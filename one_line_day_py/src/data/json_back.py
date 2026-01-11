@@ -17,50 +17,63 @@ if settings.db_type == DbType.JSON:
 else: 
     DB: json_db_type = dict()
 
+# from datetime import date
+# test_journal = JournalEntry(date=date.today(), message="Wow today was so cool")
+# DB: dict[UUID, JournalEntry] = {test_journal.id:test_journal}  
+
+
 class JsonDb(Database):
     db_path = settings.db_path
     db = DB
     
-    async def insert(self, data: JournalCreate) -> JournalEntry:
+    @classmethod
+    async def insert(cls, data: JournalCreate) -> JournalEntry:
         entry = JournalEntry(**data.model_dump())
-        self.db[entry.id] = entry
-        await self.write_file()
+        cls.db[entry.id] = entry
+        await cls.write_file()
         return entry
-
-    async def list(self, **kwargs) -> list[JournalEntry]:
-        list(self.db.values())
-
-    async def get(self, entry_id: UUID) -> JournalEntry:
-        if entry_id not in self.db:
+        
+    @classmethod
+    async def list(cls, **kwargs) -> list[JournalEntry]:
+        return list(cls.db.values())
+        
+    @classmethod
+    async def get(cls, entry_id: UUID) -> JournalEntry:
+        if entry_id not in cls.db:
             raise ValueError(f"Journal entry {entry_id} not found")
-        return self.db[entry_id]
-
-    async def update(self, entry_id: UUID, data: JournalUpdate) -> JournalEntry:
-        if entry_id not in self.db:
+        return cls.db[entry_id]
+        
+    @classmethod
+    async def update(cls, entry_id: UUID, data: JournalUpdate) -> JournalEntry:
+        if entry_id not in cls.db:
             raise ValueError(f"Journal entry {entry_id} not found")
 
-        existing = self.db[entry_id]
+        existing = cls.db[entry_id]
         updated = existing.copy(update=data.dict(exclude_unset=True))
-        self.db[entry_id] = updated
-        await self.write_file()
+        cls.db[entry_id] = updated
+        await cls.write_file()
         return updated
-
-    async def delete(self, entry_id: UUID) -> None:
-        if entry_id not in self.db:
+        
+    @classmethod
+    async def delete(cls, entry_id: UUID) -> None:
+        if entry_id not in cls.db:
             raise ValueError(f"Journal entry {entry_id} not found")
 
-        del self.db[entry_id]
-        await self.write_file()
-
-    async def write_file(self):
-        with open(self.db_path, "w") as file:
+        del cls.db[entry_id]
+        await cls.write_file()
+        
+    @classmethod
+    async def write_file(cls):
+        with open(cls.db_path, "w") as file:
             json.dump(self.db, file)
 
 
 if __name__ == "__main__":
     from datetime import date
-    db = JsonDb()
-    new_entry = JournalCreate(date=date.today(), message="Another Great Day")
-    db.insert(new_entry)
-    print("Done entering data")
+    from asyncio import run
+    # db = JsonDb()
+    # new_entry = JournalCreate(date=date.today(), message="Another Great Day")
+    # db.insert(new_entry)
+    entries = run(JsonDb.list())
+    print(f"{entries}")
 
