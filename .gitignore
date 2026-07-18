@@ -12,12 +12,14 @@ wheels/
 # VS Code
 .vscode
 
+# Environment variables
+.env
+
 
 # Databases in data
 # TODO: Update this to only OMIT .py files instead
 /**/data/*.json
 /**/data/*.sql
 
-uv.lock
 
 
