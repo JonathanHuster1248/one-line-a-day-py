@@ -9,7 +9,7 @@ from litestar.params import Body
 from datetime import date
 from typing import Optional, Iterable
 
-from .model import JournalCreate, JournalEntry, JournalUpdate
+from .model import JournalEntry
 from .settings import settings, DbType
 from .data.json_back import JsonDb
 from .data.sql_back import SqlDb
@@ -39,7 +39,7 @@ class JournalController(Controller):
     # CREATE
     @post("/")
     async def create_journal(self, date: date, message: str, photos: Iterable[str] = ()) -> JournalEntry:
-        data = JournalCreate(date=date, message=message, photos=list(photos))
+        data = JournalEntry(date=date, message=message, photos=list(photos))
         entry = await db_class.insert(data)
         return entry
 

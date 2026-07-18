@@ -24,8 +24,7 @@ class JsonDb(Database):
     db = DB
     
     @classmethod
-    async def insert(cls, data: JournalCreate) -> JournalEntry:
-        entry = JournalEntry(**data.model_dump())
+    async def insert(cls, entry: JournalEntry) -> JournalEntry:
         cls.db[str(entry.id)] = entry
         await cls.write_file()
         return entry
@@ -41,7 +40,7 @@ class JsonDb(Database):
         return cls.db[entry_id]
         
     @classmethod
-    async def update(cls, entry_id: UUID, data: JournalUpdate) -> JournalEntry:
+    async def update(cls, entry_id: UUID, data: JournalEntry) -> JournalEntry:
         entry_id = str(entry_id)
         if entry_id not in cls.db:
             raise NotFoundException(f"Journal entry {entry_id} not found")

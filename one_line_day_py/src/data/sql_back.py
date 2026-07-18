@@ -4,8 +4,21 @@ from . import Database
 from ..model import JournalUpdate, JournalCreate, JournalEntry
 from ..settings import settings
 
+from sqlmodel import create_engine, Session, SQLModel
+from sqlmodel import SQLModel, Field
 
-# TODO: Actually point this to an SQL database using an ORM
+DATABASE_URL = "sqlite:///journal.db"
+
+engine = create_engine(
+    f"sqlite:///{settings.db_path}",
+    echo=False,
+    connect_args={"check_same_thread": False},
+)
+
+def init_db() -> None:
+    SQLModel.metadata.create_all(engine)
+
+
 class SqlDb(Database):
     db_path = settings.db_path
     db = None
