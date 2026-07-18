@@ -58,10 +58,16 @@ class JournalController(Controller):
     # UPDATE
     @put("/{entry_id:uuid}")
     async def update_journal(
-        self, entry_id: UUID, date: Optional[date] = None, message: Optional[str] = None, photos: Iterable[str] = ()
+        self, entry_id: UUID, input_date: Optional[date] = None, message: Optional[str] = None, photos: Iterable[str] = ()
     ) -> JournalEntry:
         # TODO: identify if I want to have photos overwrite or append. Defaulting to overwrite for now
-        updated_data = JournalUpdate(date=date, message=message, photos=photos)
+        existing_data = self.get_journal(entry_id)
+
+        input_date = input_date or existing_data.date
+        message = message or existing_data.message
+        photos = photos or existing_data.photos
+
+        updated_data = JournalEntry(uuid=entry_id, date=input_date, message=message, photos=photos)
         entry = await db_class.update(entry_id, updated_data)
         return entry
 

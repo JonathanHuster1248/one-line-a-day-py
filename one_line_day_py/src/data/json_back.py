@@ -3,7 +3,7 @@ import json
 from litestar.exceptions import NotFoundException
 
 from . import Database
-from ..model import JournalUpdate, JournalCreate, JournalEntry
+from ..model import JournalEntry
 from ..settings import settings, DbType
 
 # TODO: Make a logger
