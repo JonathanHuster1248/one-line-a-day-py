@@ -10,15 +10,18 @@ json_db_type = dict[str, JournalEntry]
 
 class JsonDb:
     def __init__(self, db_path: str):
+        self.db_path = db_path
+        self.db: json_db_type = self.read_db_with_default(db_path)
+
+    @staticmethod
+    def read_db_with_default(db_path: str)->json_db_type:
         try: 
             with open(db_path, "r") as file:
                 raw_db = json.load(file)
-            db = {id:JournalEntry(**entry) for id, entry in raw_db.items()}
+            return {id:JournalEntry(**entry) for id, entry in raw_db.items()}
+        # TODO: don't overwrite on decoder error as that will destroy any existing data
         except (FileNotFoundError, json.JSONDecodeError):
-            db = dict()
-        
-        self.db_path = db_path
-        self.db: json_db_type = db
+            return dict()
         
     
     async def insert(self, entry: JournalEntry) -> JournalEntry:
@@ -56,9 +59,8 @@ class JsonDb:
         
     async def write_file(self):
         with open(self.db_path, "w") as file:
-            json.dump(self.serialize_db(self.db), file)
+            json.dump(self.serialize(), file)
             
-    @staticmethod
-    def serialize_db(db: dict[UUID, JournalEntry]) -> dict[str, JournalEntry]:
-        return {uuid:entry.model_dump(mode='json') for uuid, entry in db.items()}
+    def serialize(self) -> dict[str, JournalEntry]:
+        return {uuid:entry.model_dump(mode='json') for uuid, entry in self.db.items()}
 
