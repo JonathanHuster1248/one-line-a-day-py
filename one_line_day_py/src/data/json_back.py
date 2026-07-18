@@ -68,5 +68,5 @@ class JsonDb(Database):
             
     @staticmethod
     def serialize_db(db: dict[UUID, JournalEntry]) -> dict[str, JournalEntry]:
-        return {uuid:entry.serialized for uuid, entry in db.items()}
+        return {uuid:entry.model_dump(mode='json') for uuid, entry in db.items()}
 
