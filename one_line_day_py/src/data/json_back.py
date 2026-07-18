@@ -70,11 +70,3 @@ class JsonDb(Database):
     def serialize_db(db: dict[UUID, JournalEntry]) -> dict[str, JournalEntry]:
         return {uuid:entry.serialized for uuid, entry in db.items()}
 
-if __name__ == "__main__":
-    from datetime import date
-    from asyncio import run
-    new_entry = JournalCreate(date=date.today(), message="A new entry?")
-    run(JsonDb.insert(new_entry))
-    # entries = run(JsonDb.list())
-    # print(f"{entries}")
-
