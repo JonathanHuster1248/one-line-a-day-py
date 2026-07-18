@@ -14,11 +14,11 @@ from .settings import settings, DbType
 from .data.json_back import JsonDb
 from .data.sql_back import SqlDb
 
-db_map = {
+backend_map = {
     DbType.JSON: JsonDb,
     DbType.SQL: SqlDb,
 }
-db_class = db_map[settings.db_type]
+db = backend_map[settings.db_type](settings.db_path)
 
 class EntryController(Controller):
     path = "/"
@@ -40,19 +40,19 @@ class JournalController(Controller):
     @post("/")
     async def create_journal(self, date: date, message: str, photos: Iterable[str] = ()) -> JournalEntry:
         data = JournalEntry(date=date, message=message, photos=list(photos))
-        entry = await db_class.insert(data)
+        entry = await db.insert(data)
         return entry
 
     # READ ALL
     @get("/")
     async def list_journals(self) -> list[JournalEntry]:
-        entries = await db_class.list()
+        entries = await db.list()
         return entries
 
     # READ ONE
     @get("/{entry_id:uuid}")
     async def get_journal(self, entry_id: UUID) -> JournalEntry:
-        entry = await db_class.get(entry_id)
+        entry = await db.get(entry_id)
         return entry
 
     # UPDATE
@@ -68,12 +68,12 @@ class JournalController(Controller):
         photos = photos or existing_data.photos
 
         updated_data = JournalEntry(uuid=entry_id, date=input_date, message=message, photos=photos)
-        entry = await db_class.update(entry_id, updated_data)
+        entry = await db.update(entry_id, updated_data)
         return entry
 
     # DELETE
     @delete("/{entry_id:uuid}")
     async def delete_journal(self, entry_id: UUID) -> None:
-        await db_class.delete(entry_id)
+        await db.delete(entry_id)
 
 

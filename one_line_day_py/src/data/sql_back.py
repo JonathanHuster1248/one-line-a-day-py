@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from . import Database
 from ..model import JournalEntry
 from ..settings import settings
 
@@ -19,9 +18,10 @@ def init_db() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-class SqlDb(Database):
-    db_path = settings.db_path
-    db = None
+class SqlDb:
+
+    def __init__(self, db_path: str):
+        self.db_path = settings.db_path
     
     async def insert(self, data: JournalEntry) -> JournalEntry:
         pass 

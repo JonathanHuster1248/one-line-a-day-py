@@ -5,6 +5,9 @@ from ..model import JournalEntry
 
 class Database(Protocol):
 
+    def __init__(self, db_path: str):
+        ...
+
     async def insert(self, data: JournalEntry) -> JournalEntry:
         ...
 
