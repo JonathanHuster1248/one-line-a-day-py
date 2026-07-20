@@ -1,9 +1,4 @@
 One line a day
-- Housekeeping
-	- pre-commit
-		- ruff
-		- formatting
-		- etc.
 - API 
 	- Adding data
 	- Setting database by users
