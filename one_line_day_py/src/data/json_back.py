@@ -1,11 +1,11 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 import json
 from litestar.exceptions import NotFoundException
 
 from ..model import JournalEntry
 
 # TODO: Make a logger
-json_db_type = dict[str, JournalEntry]
+json_db_type = dict[UUID, JournalEntry]
 
 
 class JsonDb:
@@ -18,14 +18,14 @@ class JsonDb:
         try: 
             with open(db_path, "r") as file:
                 raw_db = json.load(file)
-            return {id:JournalEntry(**entry) for id, entry in raw_db.items()}
+            return {UUID(id):JournalEntry(**entry) for id, entry in raw_db.items()}
         # TODO: don't overwrite on decoder error as that will destroy any existing data
         except (FileNotFoundError, json.JSONDecodeError):
             return dict()
         
     
     async def insert(self, entry: JournalEntry) -> JournalEntry:
-        self.db[str(entry.id)] = entry
+        self.db[uuid4()] = entry
         await self.write_file()
         return entry
         
@@ -38,23 +38,18 @@ class JsonDb:
         return self.db[entry_id]
         
     async def update(self, entry_id: UUID, data: JournalEntry) -> JournalEntry:
-        entry_id = str(entry_id)
+        if entry_id not in self.db:
+            raise NotFoundException(f"Journal entry {entry_id} not found")
+        
+        self.db[entry_id] = data
+        await self.write_file()
+        return data
+        
+    async def delete(self, entry_id: UUID) -> None:
         if entry_id not in self.db:
             raise NotFoundException(f"Journal entry {entry_id} not found")
 
-        existing = self.db[entry_id]
-        to_update = {key: value for key, value in data.model_dump().items() if value}
-        updated = existing.model_copy(update=to_update)
-        self.db[entry_id] = updated
-        await self.write_file()
-        return updated
-        
-    async def delete(self, entry_id: UUID) -> None:
-        id_str = str(entry_id)
-        if id_str not in self.db:
-            raise NotFoundException(f"Journal entry {id_str} not found")
-
-        del self.db[id_str]
+        del self.db[entry_id]
         await self.write_file()
         
     async def write_file(self):
@@ -62,5 +57,5 @@ class JsonDb:
             json.dump(self.serialize(), file)
             
     def serialize(self) -> dict[str, JournalEntry]:
-        return {uuid:entry.model_dump(mode='json') for uuid, entry in self.db.items()}
+        return {str(uuid):entry.model_dump(mode='json') for uuid, entry in self.db.items()}
 

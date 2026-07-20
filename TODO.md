@@ -6,6 +6,7 @@ One line a day
 		- etc.
 - API 
 	- Adding data
+	- Setting database by users
 	- removing data
 	- retrieving data
 	- Searching data

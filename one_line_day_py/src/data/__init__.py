@@ -3,7 +3,7 @@ from uuid import UUID
 
 from ..model import JournalEntry
 
-class Database(Protocol):
+class JournalDatabase(Protocol):
 
     def __init__(self, db_path: str):
         ...
