@@ -1,5 +1,15 @@
 One line a day
 - API 
+  - Update the API schema and adjust backends to match
+    - Users endpoints
+      - List users
+      - Get name from id
+      - Get id from name (TBD on how to do that if names are not unique)
+      - Get permissions from id
+      - add and patch versions of all these
+    - Journal endpoints
+      - Get journal entry by id
+      - get Journal entry by user-id and date
 	- Adding data
 	- Setting database by users
 	- removing data
