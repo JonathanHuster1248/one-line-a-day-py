@@ -4,7 +4,6 @@ from uuid import UUID
 
 from litestar import Controller, get, post, put, delete
 from litestar.response import File
-from litestar.params import Body
 
 from datetime import date
 from typing import Optional, Iterable
@@ -20,13 +19,14 @@ backend_map = {
 }
 db = backend_map[settings.db_type](settings.db_path)
 
+
 class EntryController(Controller):
     path = "/"
 
     @get("/")
     async def hello_world(self) -> dict:
-        return {"hello":"world"}
-    
+        return {"hello": "world"}
+
     @get("/favicon.ico")
     async def get_favicon(self) -> File:
         return File(path="one_line_day_py/static/favicon.ico")
@@ -38,7 +38,9 @@ class JournalController(Controller):
 
     # CREATE
     @post("/")
-    async def create_journal(self, date: date, message: str, photos: Iterable[str] = ()) -> JournalEntry:
+    async def create_journal(
+        self, date: date, message: str, photos: Iterable[str] = ()
+    ) -> JournalEntry:
         data = JournalEntry(date=date, message=message, photos=list(photos))
         entry = await db.insert(data)
         return entry
@@ -58,7 +60,11 @@ class JournalController(Controller):
     # UPDATE
     @put("/{entry_id:uuid}")
     async def update_journal(
-        self, entry_id: UUID, input_date: Optional[date] = None, message: Optional[str] = None, photos: Iterable[str] = ()
+        self,
+        entry_id: UUID,
+        input_date: Optional[date] = None,
+        message: Optional[str] = None,
+        photos: Iterable[str] = (),
     ) -> JournalEntry:
         # TODO: identify if I want to have photos overwrite or append. Defaulting to overwrite for now
         existing_data = self.get_journal(entry_id)
@@ -67,7 +73,9 @@ class JournalController(Controller):
         message = message or existing_data.message
         photos = photos or existing_data.photos
 
-        updated_data = JournalEntry(uuid=entry_id, date=input_date, message=message, photos=photos)
+        updated_data = JournalEntry(
+            uuid=entry_id, date=input_date, message=message, photos=photos
+        )
         entry = await db.update(entry_id, updated_data)
         return entry
 
@@ -75,5 +83,3 @@ class JournalController(Controller):
     @delete("/{entry_id:uuid}")
     async def delete_journal(self, entry_id: UUID) -> None:
         await db.delete(entry_id)
-
-

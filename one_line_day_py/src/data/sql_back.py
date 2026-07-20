@@ -3,8 +3,7 @@ from uuid import UUID
 from ..model import JournalEntry
 from ..settings import settings
 
-from sqlmodel import create_engine, Session, SQLModel
-from sqlmodel import SQLModel, Field
+from sqlmodel import create_engine, SQLModel
 
 DATABASE_URL = "sqlite:///journal.db"
 
@@ -14,17 +13,17 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
 )
 
+
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
 
 
 class SqlDb:
-
     def __init__(self, db_path: str):
         self.db_path = settings.db_path
-    
+
     async def insert(self, data: JournalEntry) -> JournalEntry:
-        pass 
+        pass
 
     async def list(self, **kwargs) -> list[JournalEntry]:
         pass
@@ -40,6 +39,3 @@ class SqlDb:
 
     async def write_file(self):
         pass
-
-
-

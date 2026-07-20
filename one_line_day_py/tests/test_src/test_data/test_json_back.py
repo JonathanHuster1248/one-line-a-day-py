@@ -1,4 +1,3 @@
-
 import one_line_day_py.src.data.json_back as module
 
 from one_line_day_py.src.model import JournalEntry
@@ -20,31 +19,41 @@ JsonDb = module.JsonDb
 
 
 @fixture(scope="function")
-def empty_db(tmp_path)->JsonDb:
+def empty_db(tmp_path) -> JsonDb:
     db_path = tmp_path / "db.json"
     return JsonDb(db_path)
 
-    
+
 @fixture(scope="function")
-def filled_db(tmp_path)->JsonDb:
+def filled_db(tmp_path) -> JsonDb:
     db_path = tmp_path / "db.json"
     db = JsonDb(db_path)
 
-    for entry in (JournalEntry(date=date.today()+timedelta(days=1*i), message=MESSAGE_FORMAT.format(i=i), photos=[PHOTO_FORMAT.format(i=i)]) for i in range(N)):
+    for entry in (
+        JournalEntry(
+            date=date.today() + timedelta(days=1 * i),
+            message=MESSAGE_FORMAT.format(i=i),
+            photos=[PHOTO_FORMAT.format(i=i)],
+        )
+        for i in range(N)
+    ):
         asyncio.run(db.insert(entry))
 
     return db
 
-def get_first_entry(db: JsonDb)->tuple[UUID, JournalEntry]:
+
+def get_first_entry(db: JsonDb) -> tuple[UUID, JournalEntry]:
     id = list(db.db.keys())[0]
     entry = db.db[id]
 
     return id, entry
 
-class TestJsonDb:
 
+class TestJsonDb:
     def test_insert(self, empty_db):
-        entry = JournalEntry(date=date.today(), message="A new message", photos=["a.png"])
+        entry = JournalEntry(
+            date=date.today(), message="A new message", photos=["a.png"]
+        )
         asyncio.run(empty_db.insert(entry))
 
         # TODO: we should just mock the write and ensure it was called
@@ -57,17 +66,19 @@ class TestJsonDb:
 
     def test_list(self, filled_db):
         entries = asyncio.run(filled_db.list())
-        
-        assert len(entries)==N
+
+        assert len(entries) == N
 
         for entry in entries:
             assert MESSAGE_FORMAT.removesuffix("{i}") in entry.message
-            assert all(PHOTO_FORMAT.removeprefix("{i}") in photo for photo in entry.photos)
+            assert all(
+                PHOTO_FORMAT.removeprefix("{i}") in photo for photo in entry.photos
+            )
 
     def test_get(self, filled_db):
         for key in filled_db.db.keys():
             entry = asyncio.run(filled_db.get(key))
-            assert type(entry) == JournalEntry
+            assert type(entry) is JournalEntry
 
         with pytest.raises(NotFoundException):
             asyncio.run(filled_db.get(uuid4()))
@@ -75,7 +86,9 @@ class TestJsonDb:
     def test_update(self, filled_db):
         id, original_entry = get_first_entry(filled_db)
 
-        modified_entry = original_entry.model_copy(update={"message":"a modified message"})
+        modified_entry = original_entry.model_copy(
+            update={"message": "a modified message"}
+        )
 
         asyncio.run(filled_db.update(id, modified_entry))
 
@@ -106,4 +119,4 @@ class TestJsonDb:
 
     def test_serialize_db(self, filled_db):
         serialized = filled_db.serialize()
-        json.dumps(serialized) # Raises no error
+        json.dumps(serialized)  # Raises no error
