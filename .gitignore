@@ -19,7 +19,7 @@ wheels/
 # Databases in data
 # TODO: Update this to only OMIT .py files instead
 /**/data/*.json
-/**/data/*.sql
+/**/data/*.db
 
 
 

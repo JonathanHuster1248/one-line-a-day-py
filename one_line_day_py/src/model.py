@@ -29,4 +29,4 @@ class JournalTable(JournalEntry, table=True):
     __table_args__ = (UniqueConstraint("author_id", "date"),)
 
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    author_id: UUID = Field(foreign_key="user.id")
+    author_id: UUID = Field(foreign_key="users.id")

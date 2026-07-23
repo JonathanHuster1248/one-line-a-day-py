@@ -42,24 +42,25 @@ class UserController(Controller):
     path = "/users"
 
     @post("/")
-    async def create_user(self, name: str) -> User:
-        user = User(name)
-        await db.add_user(user)
+    async def create_user(self, name: str) -> User:  # Maybe return the user-id instead?
+        user = User(name=name)
+        await users_db.add_user(user)
         return user
 
     @get("/")
     async def list_users(self) -> list[User]:
-        users = await db.list_users()
+        users = await users_db.list_users()
         return users
 
-    @get("/{user_id:uuid}")
-    async def get_user_by_id(self, user_id: UUID) -> User:
-        user = await db.get_user_by_id(user_id)
+    @get("/{user_id:str}")
+    async def get_user_by_id(self, user_id: str) -> User:
+        user_id = UUID(user_id)
+        user = await users_db.get_user_by_id(user_id)
         return user
 
     @get("/{user_name:str}")
     async def get_user_id_by_name(self, user_name: str) -> UUID:
-        user_id = await db.get_user_id_by_name(user_name)
+        user_id = await users_db.get_user_id_by_name(user_name)
         return user_id
 
     @put("/{user_id:uuid}")
@@ -69,12 +70,12 @@ class UserController(Controller):
         name = name or existing_user.name
 
         updated_user = User(name=name)
-        user = await db.update_user(user_id, updated_user)
+        user = await users_db.update_user(user_id, updated_user)
         return user
 
     @delete("/{user_id:uuid}")
     async def delete_user(self, user_id: UUID) -> None:
-        await db.delete_user(user_id)
+        await users_db.delete_user(user_id)
 
 
 # TODO: Use Litestar's dependency injection for this instead of just relying on db being made at the top of the file
@@ -86,22 +87,22 @@ class JournalController(Controller):
         self, user_id: UUID, date: date, message: str, photos: Iterable[str] = ()
     ) -> JournalEntry:
         journal_entry = JournalEntry(date=date, message=message, photos=list(photos))
-        entry = await db.add_journal(user_id, journal_entry)
+        entry = await journals_db.add_journal(user_id, journal_entry)
         return entry
 
     @get("/")
     async def list_journals(self) -> list[JournalEntry]:
-        entries = await db.list_journals()
+        entries = await journals_db.list_journals()
         return entries
 
     @get("/{entry_id:uuid}")
     async def get_journal(self, entry_id: UUID) -> JournalEntry:
-        entry = await db.get_journal(entry_id)
+        entry = await journals_db.get_journal(entry_id)
         return entry
 
     @get("/{entry_id:uuid}/author")
     async def get_journal_author(self, entry_id: UUID) -> UUID:
-        author_id = await db.get_journal_author(entry_id)
+        author_id = await journals_db.get_journal_author(entry_id)
         return author_id
 
     @put("/{entry_id:uuid}")
@@ -124,9 +125,9 @@ class JournalController(Controller):
 
         updated_data = JournalEntry(date=input_date, message=message, photos=photos)
 
-        entry = await db.update_journal(entry_id, author_id, updated_data)
+        entry = await journals_db.update_journal(entry_id, author_id, updated_data)
         return entry
 
     @delete("/{entry_id:uuid}")
     async def delete_journal(self, entry_id: UUID) -> None:
-        await db.delete(entry_id)
+        await journals_db.delete(entry_id)

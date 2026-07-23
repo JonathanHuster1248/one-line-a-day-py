@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from ..model import JournalEntry, User, JournalTable, UserTable
+from ..model import JournalEntry, User, UserTable
 from ..settings import settings
 
 from sqlmodel import create_engine, SQLModel, Session, select
@@ -19,12 +19,14 @@ def init_db() -> None:
 class UserSqlDb:
     def __init__(self, db_path: str):
         self.db_path = settings.db_path
+        init_db()
 
     async def add_user(self, user: User) -> User:
-        user_table = UserTable(user.name)
+        user_table = UserTable(name=user.name)
         with Session(engine) as session:
-            session.add(user)
+            session.add(user_table)
             session.commit()
+        return user
 
     async def list_users(self, **kwargs) -> list[User]:
         pass

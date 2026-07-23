@@ -11,8 +11,8 @@ class DbType(StrEnum):
     SQL = "sql"
 
 
-DEFAULT_DB_PATH = str(Path(__file__).parent / "data" / "test_db.json")
-# DEFAULT_DB_PATH = str(Path(__file__).parent / "data" / "journal_entries.db")
+# DEFAULT_DB_PATH = str(Path(__file__).parent.resolve() / "data" / "test_db.json")
+DEFAULT_DB_PATH = str(Path(__file__).parent.resolve() / "data" / "journal_entries.db")
 
 
 class CoreSettings(BaseSettings):
