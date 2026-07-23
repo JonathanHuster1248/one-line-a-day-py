@@ -1,11 +1,9 @@
 from uuid import UUID
 
-from ..model import JournalEntry
+from ..model import JournalEntry, User
 from ..settings import settings
 
 from sqlmodel import create_engine, SQLModel
-
-DATABASE_URL = "sqlite:///journal.db"
 
 engine = create_engine(
     f"sqlite:///{settings.db_path}",
@@ -18,24 +16,48 @@ def init_db() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-class SqlDb:
+class UserSqlDb:
     def __init__(self, db_path: str):
         self.db_path = settings.db_path
 
-    async def insert(self, data: JournalEntry) -> JournalEntry:
+    async def add_user(self, data: User) -> User:
         pass
 
-    async def list(self, **kwargs) -> list[JournalEntry]:
+    async def list_users(self, **kwargs) -> list[User]:
         pass
 
-    async def get(self, entry_id: UUID) -> JournalEntry:
+    async def get_user_by_id(self, user_id: UUID) -> User:
         pass
 
-    async def update(self, entry_id: UUID, data: JournalEntry) -> JournalEntry:
+    async def get_user_id_by_name(self, user_id: UUID, data: User) -> User:
         pass
 
-    async def delete(self, entry_id: UUID) -> None:
+    async def update_user(self, user_id: UUID, updated_user: User) -> User:
         pass
 
-    async def write_file(self):
+    async def delete_user(self, user_id: UUID) -> None:
         pass
+
+
+class JournalSqlDb:
+    def __init__(self, db_path: str):
+        self.db_path = settings.db_path
+
+    async def add_journal(self, data: JournalEntry) -> JournalEntry:
+        pass
+
+    async def list_journals(self, **kwargs) -> list[JournalEntry]:
+        pass
+
+    async def get_journal(self, journal_id: UUID) -> JournalEntry:
+        pass
+
+    async def get_journal_author(self, journal_id: UUID) -> UUID:
+        pass
+
+    async def update_journal(self, journal_id: UUID, updated_journal: JournalEntry) -> JournalEntry:
+        pass
+
+    async def delete_journal(self, journal_id: UUID) -> None:
+        pass
+

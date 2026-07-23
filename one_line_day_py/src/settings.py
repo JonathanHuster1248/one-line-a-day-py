@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings
 from enum import StrEnum
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class DbType(StrEnum):

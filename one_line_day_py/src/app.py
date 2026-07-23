@@ -11,13 +11,19 @@ from typing import Optional, Iterable
 from .model import JournalEntry, User
 from .settings import settings, DbType
 from .data.json_back import JsonDb
-from .data.sql_back import SqlDb
+from .data.sql_back import UserSqlDb, JournalSqlDb
 
 backend_map = {
     DbType.JSON: JsonDb,
-    DbType.SQL: SqlDb,
+    DbType.SQL: {
+        "users": UserSqlDb,
+        "journals":JournalSqlDb,
+    },
 }
-db = backend_map[settings.db_type](settings.db_path)
+db = backend_map[settings.db_type]
+
+users_db = db["users"](settings.db_path)
+journals_db = db["journals"](settings.db_path)
 
 
 class EntryController(Controller):
@@ -57,7 +63,7 @@ class UserController(Controller):
         return user_id
 
     @put("/{user_id:uuid}")
-    async def update_journal(self, user_id: UUID, name: Optional[str] = None) -> User:
+    async def update_user(self, user_id: UUID, name: Optional[str] = None) -> User:
         existing_user = self.get_user_by_id(user_id)
 
         name = name or existing_user.name
@@ -71,11 +77,10 @@ class UserController(Controller):
         await db.delete_user(user_id)
 
 
-# TODO: Use Litestar's dependency injection for this instead
+# TODO: Use Litestar's dependency injection for this instead of just relying on db being made at the top of the file
 class JournalController(Controller):
     path = "/journals"
 
-    # CREATE
     @post("/")
     async def create_journal(
         self, user_id: UUID, date: date, message: str, photos: Iterable[str] = ()
@@ -84,13 +89,11 @@ class JournalController(Controller):
         entry = await db.add_journal(user_id, journal_entry)
         return entry
 
-    # READ ALL
     @get("/")
     async def list_journals(self) -> list[JournalEntry]:
         entries = await db.list_journals()
         return entries
 
-    # READ ONE
     @get("/{entry_id:uuid}")
     async def get_journal(self, entry_id: UUID) -> JournalEntry:
         entry = await db.get_journal(entry_id)
@@ -101,7 +104,6 @@ class JournalController(Controller):
         author_id = await db.get_journal_author(entry_id)
         return author_id
 
-    # UPDATE
     @put("/{entry_id:uuid}")
     async def update_journal(
         self,
@@ -125,7 +127,6 @@ class JournalController(Controller):
         entry = await db.update_journal(entry_id, author_id, updated_data)
         return entry
 
-    # DELETE
     @delete("/{entry_id:uuid}")
     async def delete_journal(self, entry_id: UUID) -> None:
         await db.delete(entry_id)
