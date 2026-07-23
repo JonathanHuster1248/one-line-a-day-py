@@ -1,4 +1,4 @@
-from .src.app import JournalController, EntryController
+from .src.app import JournalController, EntryController, UserController
 from litestar import Litestar
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import SwaggerRenderPlugin
@@ -6,7 +6,7 @@ from litestar.openapi.plugins import SwaggerRenderPlugin
 
 def make_app():
     return Litestar(
-        route_handlers=[EntryController, JournalController],
+        route_handlers=[EntryController, JournalController, UserController],
         openapi_config=OpenAPIConfig(
             title="One Line a Day",
             description="Backend of one line a day application",
