@@ -17,7 +17,7 @@ backend_map = {
     DbType.JSON: JsonDb,
     DbType.SQL: {
         "users": UserSqlDb,
-        "journals":JournalSqlDb,
+        "journals": JournalSqlDb,
     },
 }
 db = backend_map[settings.db_type]

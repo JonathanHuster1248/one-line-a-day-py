@@ -55,9 +55,10 @@ class JournalSqlDb:
     async def get_journal_author(self, journal_id: UUID) -> UUID:
         pass
 
-    async def update_journal(self, journal_id: UUID, updated_journal: JournalEntry) -> JournalEntry:
+    async def update_journal(
+        self, journal_id: UUID, updated_journal: JournalEntry
+    ) -> JournalEntry:
         pass
 
     async def delete_journal(self, journal_id: UUID) -> None:
         pass
-
