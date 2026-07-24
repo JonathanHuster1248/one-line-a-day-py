@@ -52,13 +52,12 @@ class UserController(Controller):
         users = await users_db.list_users()
         return users
 
-    @get("/{user_id:str}")
-    async def get_user_by_id(self, user_id: str) -> User:
-        user_id = UUID(user_id)
+    @get("/{user_id:uuid}")
+    async def get_user_by_id(self, user_id: UUID) -> str:
         user = await users_db.get_user_by_id(user_id)
         return user
 
-    @get("/{user_name:str}")
+    @get("/name/{user_name:str}")
     async def get_user_id_by_name(self, user_name: str) -> UUID:
         user_id = await users_db.get_user_id_by_name(user_name)
         return user_id

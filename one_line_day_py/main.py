@@ -13,6 +13,7 @@ def make_app():
             version="0.0.1",
             render_plugins=[SwaggerRenderPlugin()],
         ),
+        debug=True,
     )
 
 
