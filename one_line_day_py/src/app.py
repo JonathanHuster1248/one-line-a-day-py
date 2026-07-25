@@ -68,7 +68,7 @@ class UserController(Controller):
 
         name = name or existing_user.name
 
-        updated_user = User(id = user_id, name=name)
+        updated_user = User(id=user_id, name=name)
         user = await users_db.update_user(user_id, updated_user)
         return user
 
@@ -82,50 +82,55 @@ class JournalController(Controller):
     path = "/journals"
 
     @post("/")
-    async def create_journal(
+    async def create_entry(
         self, user_id: UUID, date: date, message: str, photos: Iterable[str] = ()
     ) -> JournalEntry:
-        journal_entry = JournalEntry(date=date, message=message, photos=list(photos))
-        entry = await journals_db.add_journal(user_id, journal_entry)
+        entry = JournalEntry(date=date, message=message, photos=list(photos))
+        await journals_db.add_entry(entry)
         return entry
 
     @get("/")
-    async def list_journals(self) -> list[JournalEntry]:
-        entries = await journals_db.list_journals()
+    async def list_entries(self) -> list[JournalEntry]:
+        entries = await journals_db.list_entries()
         return entries
 
     @get("/{entry_id:uuid}")
-    async def get_journal(self, entry_id: UUID) -> JournalEntry:
-        entry = await journals_db.get_journal(entry_id)
+    async def get_entry(self, entry_id: UUID) -> JournalEntry:
+        entry = await journals_db.get_entry(entry_id)
         return entry
 
     @get("/{entry_id:uuid}/author")
-    async def get_journal_author(self, entry_id: UUID) -> UUID:
-        author_id = await journals_db.get_journal_author(entry_id)
+    async def get_entry_author(self, entry_id: UUID) -> UUID:
+        author_id = await journals_db.get_entry_author(entry_id)
         return author_id
 
     @put("/{entry_id:uuid}")
-    async def update_journal(
+    async def update_entry(
         self,
         entry_id: UUID,
-        user_id: Optional[UUID] = None,
+        author_id: Optional[UUID] = None,
         input_date: Optional[date] = None,
         message: Optional[str] = None,
         photos: Iterable[str] = (),
     ) -> JournalEntry:
         # TODO: identify if I want to have photos overwrite or append. Defaulting to overwrite for now
-        existing_entry = self.get_journal(entry_id)
-        existing_author = self.get_journal_author(entry_id)
+        existing_entry = self.get_entry(entry_id)
 
-        author_id = user_id or existing_author
+        author_id = author_id or existing_entry.author_id
         input_date = input_date or existing_entry.date
         message = message or existing_entry.message
         photos = photos or existing_entry.photos
 
-        updated_data = JournalEntry(date=input_date, message=message, photos=photos)
+        updated_entry = JournalEntry(
+            id=entry_id,
+            author_id=author_id,
+            date=input_date,
+            message=message,
+            photos=photos,
+        )
+        await journals_db.update_journal(updated_entry)
 
-        entry = await journals_db.update_journal(entry_id, author_id, updated_data)
-        return entry
+        return updated_entry
 
     @delete("/{entry_id:uuid}")
     async def delete_journal(self, entry_id: UUID) -> None:

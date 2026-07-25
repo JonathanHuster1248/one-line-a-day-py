@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from ..model import JournalEntry, User
-from ..settings import settings
 
 from sqlmodel import create_engine, SQLModel, Session, select
 
@@ -21,9 +20,8 @@ class UserSqlDb:
         self.engine = init_db(db_path)
 
     async def add_user(self, user: User) -> User:
-        user_table = User(name=user.name)
         with Session(self.engine) as session:
-            session.add(user_table)
+            session.add(user)
             session.commit()
         return user
 
@@ -49,7 +47,6 @@ class UserSqlDb:
     async def update_user(self, updated_user: User) -> User:
         user = await self.add_user(updated_user)
         return user
-            
 
     async def delete_user(self, user_id: UUID) -> None:
         with Session(self.engine) as session:
@@ -61,24 +58,39 @@ class UserSqlDb:
 
 class JournalSqlDb:
     def __init__(self, db_path: str):
-        self.db_path = settings.db_path
+        self.engine = init_db(db_path)
 
-    async def add_journal(self, data: JournalEntry) -> JournalEntry:
-        pass
+    async def add_entry(self, entry: JournalEntry) -> JournalEntry:
+        with Session(self.engine) as session:
+            session.add(entry)
+            session.commit()
+        return entry
 
-    async def list_journals(self, **kwargs) -> list[JournalEntry]:
-        pass
+    async def list_entries(self, **kwargs) -> list[JournalEntry]:
+        with Session(self.engine) as session:
+            statement = select(JournalEntry)
+            entries = session.exec(statement)
+            return list(entries)
 
-    async def get_journal(self, journal_id: UUID) -> JournalEntry:
-        pass
+    async def get_entry(self, entry_id: UUID) -> JournalEntry:
+        with Session(self.engine) as session:
+            statement = select(JournalEntry).where(JournalEntry.id == entry_id)
+            user = session.exec(statement).one()
+            return user
 
-    async def get_journal_author(self, journal_id: UUID) -> UUID:
-        pass
+    async def get_entry_author(self, entry_id: UUID) -> UUID:
+        with Session(self.engine) as session:
+            statement = select(JournalEntry).where(JournalEntry.id == entry_id)
+            user = session.exec(statement).one()
+            return user.author_id
 
-    async def update_journal(
-        self, journal_id: UUID, updated_journal: JournalEntry
-    ) -> JournalEntry:
-        pass
+    async def update_entry(self, updated_entry: JournalEntry) -> JournalEntry:
+        await self.add_entry(updated_entry)
+        return updated_entry
 
-    async def delete_journal(self, journal_id: UUID) -> None:
-        pass
+    async def delete_journal(self, entry_id: UUID) -> None:
+        with Session(self.engine) as session:
+            statement = select(JournalEntry).where(JournalEntry.id == entry_id)
+            entry = session.exec(statement).one()
+            session.delete(entry)
+            session.commit()

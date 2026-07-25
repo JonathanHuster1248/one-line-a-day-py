@@ -3,8 +3,6 @@ from __future__ import annotations
 from datetime import date
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column
-from sqlalchemy.types import JSON
 from sqlmodel import SQLModel, Field, UniqueConstraint
 
 
@@ -23,4 +21,5 @@ class JournalEntry(SQLModel, table=True):
     author_id: UUID = Field(foreign_key="users.id")
     date: date
     message: str
-    photos: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    # TODO: Turn the Photos into another table that has id, journal_id, and file_path
+    photos: list[str] = Field(default_factory=list)
