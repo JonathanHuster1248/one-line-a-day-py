@@ -45,8 +45,15 @@ class UserSqlDb:
             return user
 
     async def update_user(self, updated_user: User) -> User:
-        user = await self.add_user(updated_user)
-        return user
+        with Session(self.engine) as session:
+            statement = select(User).where(User.id == updated_user.id)
+            user = session.exec(statement).one()
+
+            user.name = updated_user.name
+            session.commit()
+            session.refresh(user)
+
+            return user
 
     async def delete_user(self, user_id: UUID) -> None:
         with Session(self.engine) as session:
@@ -61,10 +68,12 @@ class JournalSqlDb:
         self.engine = init_db(db_path)
 
     async def add_entry(self, entry: JournalEntry) -> JournalEntry:
+        # TODO: Raise a 400 error when we get an integrety issue (author id not found or author id and date already exist)
         with Session(self.engine) as session:
             session.add(entry)
             session.commit()
-        return entry
+            session.refresh(entry)
+            return entry
 
     async def list_entries(self, **kwargs) -> list[JournalEntry]:
         with Session(self.engine) as session:
@@ -85,10 +94,21 @@ class JournalSqlDb:
             return user.author_id
 
     async def update_entry(self, updated_entry: JournalEntry) -> JournalEntry:
-        await self.add_entry(updated_entry)
-        return updated_entry
+        with Session(self.engine) as session:
+            statement = select(JournalEntry).where(JournalEntry.id == updated_entry.id)
+            user = session.exec(statement).one()
 
-    async def delete_journal(self, entry_id: UUID) -> None:
+            user.author_id = updated_entry.author_id
+            user.message = updated_entry.message
+            user.date = updated_entry.date
+
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+            return user
+
+    async def delete_entry(self, entry_id: UUID) -> None:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == entry_id)
             entry = session.exec(statement).one()
