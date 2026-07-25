@@ -3,7 +3,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from litestar import Controller, get, post, put, delete
-from litestar.response import File
+from litestar.response import File, Redirect
 
 from datetime import date
 from typing import Optional, Iterable
@@ -30,8 +30,8 @@ class EntryController(Controller):
     path = "/"
 
     @get("/")
-    async def hello_world(self) -> dict:
-        return {"hello": "world"}
+    async def hello_world(self) -> Redirect:
+        return Redirect("/schema/swagger/")
 
     @get("/favicon.ico")
     async def get_favicon(self) -> File:
@@ -53,12 +53,12 @@ class UserController(Controller):
         return users
 
     @get("/{user_id:uuid}")
-    async def get_user_by_id(self, user_id: UUID) -> str:
+    async def get_user_by_id(self, user_id: UUID) -> User:
         user = await users_db.get_user_by_id(user_id)
         return user
 
     @get("/name/{user_name:str}")
-    async def get_user_id_by_name(self, user_name: str) -> UUID:
+    async def get_user_by_name(self, user_name: str) -> User:
         user_id = await users_db.get_user_id_by_name(user_name)
         return user_id
 
@@ -68,7 +68,7 @@ class UserController(Controller):
 
         name = name or existing_user.name
 
-        updated_user = User(name=name)
+        updated_user = User(id = user_id, name=name)
         user = await users_db.update_user(user_id, updated_user)
         return user
 

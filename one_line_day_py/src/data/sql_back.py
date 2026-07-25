@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from ..model import JournalEntry, User, UserTable
+from ..model import JournalEntry, User
 from ..settings import settings
 
 from sqlmodel import create_engine, SQLModel, Session, select
@@ -21,7 +21,7 @@ class UserSqlDb:
         self.engine = init_db(db_path)
 
     async def add_user(self, user: User) -> User:
-        user_table = UserTable(name=user.name)
+        user_table = User(name=user.name)
         with Session(self.engine) as session:
             session.add(user_table)
             session.commit()
@@ -29,24 +29,34 @@ class UserSqlDb:
 
     async def list_users(self, **kwargs) -> list[User]:
         with Session(self.engine) as session:
-            statement = select(UserTable)
+            statement = select(User)
             results = session.exec(statement)
             return list(results)
 
     async def get_user_by_id(self, user_id: UUID) -> User:
         with Session(self.engine) as session:
-            statement = select(UserTable).where(UserTable.id == user_id)
-            results = session.exec(statement)
-            return results[0]
+            statement = select(User).where(User.id == user_id)
+            user = session.exec(statement).one()
+            return user
 
-    async def get_user_id_by_name(self, user_id: UUID, user: User) -> User:
-        pass
+    async def get_user_id_by_name(self, name: str) -> User:
+        # There's no check right now for users with the same name, but we should figure out how to make the searching more robust
+        with Session(self.engine) as session:
+            statement = select(User).where(User.name == name)
+            user = session.exec(statement).one()
+            return user
 
-    async def update_user(self, user_id: UUID, updated_user: User) -> User:
-        pass
+    async def update_user(self, updated_user: User) -> User:
+        user = await self.add_user(updated_user)
+        return user
+            
 
     async def delete_user(self, user_id: UUID) -> None:
-        pass
+        with Session(self.engine) as session:
+            statement = select(User).where(User.id == user_id)
+            user = session.exec(statement).one()
+            session.delete(user)
+            session.commit()
 
 
 class JournalSqlDb:
