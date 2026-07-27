@@ -1,3 +1,4 @@
+import uvicorn
 from .src.app import JournalController, EntryController, UserController
 from litestar import Litestar
 from litestar.openapi.config import OpenAPIConfig
@@ -18,11 +19,10 @@ def make_app():
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     uvicorn.run(
         "one_line_day_py.main:make_app",
         factory=True,
+        host="0.0.0.0",
         port=8000,
         reload=True,
     )

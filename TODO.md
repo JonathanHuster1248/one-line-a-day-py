@@ -4,14 +4,10 @@ One line a day
     - Add sections to swagger UI for clarity
     - Make photos table for separate responsibilities
     - Add components and schemas
-	- Adding data
-	- Setting database by users
-	- removing data
-	- retrieving data
-	- Searching data
 	- Tagging People/Groups
 - Dockerize
-- Enable storage off the docker image
+	- Add volumes outside the container
+	- Allow env variables
 - Enable photo storage
 - Create front end
 - Deploy and utilize mine

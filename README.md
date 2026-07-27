@@ -5,3 +5,10 @@ To run the main API call
 ```
 python -m one_line_day_py.main
 ```
+
+A Docker implementation also exists. Run the build command below to create the image then run the run command to use that image:
+
+```
+docker build . -t one-line-a-day:latest
+docker run -p 127.0.0.1:8000:8000 one-line-a-day:latest
+```

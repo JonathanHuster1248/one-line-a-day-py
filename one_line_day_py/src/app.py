@@ -9,21 +9,11 @@ from datetime import date
 from typing import Optional
 
 from .model import JournalEntry, User
-from .settings import settings, DbType
-from .data.json_back import JsonDb
+from .settings import settings
 from .data.sql_back import UserSqlDb, JournalSqlDb
 
-backend_map = {
-    DbType.JSON: JsonDb,
-    DbType.SQL: {
-        "users": UserSqlDb,
-        "journals": JournalSqlDb,
-    },
-}
-db = backend_map[settings.db_type]
-
-users_db = db["users"](settings.db_path)
-journals_db = db["journals"](settings.db_path)
+users_db = UserSqlDb(settings.db_path)
+journals_db = JournalSqlDb(settings.db_path)
 
 
 class EntryController(Controller):
