@@ -20,8 +20,12 @@ class EntryController(Controller):
     path = "/"
 
     @get("/")
-    async def hello_world(self) -> Redirect:
+    async def entry(self) -> Redirect:
         return Redirect("/schema/swagger/")
+
+    @get("/hello_world")
+    async def hello_world(self) -> str:
+        return "Hello World!"
 
     @get("/favicon.ico")
     async def get_favicon(self) -> File:
