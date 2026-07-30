@@ -22,4 +22,7 @@ wheels/
 /**/data/*.db
 
 
+# Front end
+frontend/node_modules
+
 
