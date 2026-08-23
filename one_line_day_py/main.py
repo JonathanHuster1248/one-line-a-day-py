@@ -11,7 +11,7 @@ def make_app():
         route_handlers=[EntryController, JournalController, UserController],
         cors_config=CORSConfig(
             allow_origins=[
-                "http://localhost:5173",
+                "*",
             ],
             allow_methods=["*"],
             allow_headers=["*"],

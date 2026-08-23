@@ -12,3 +12,7 @@ A Docker implementation also exists. Run the build command below to create the i
 docker build . -t one-line-a-day:latest
 docker run -p 127.0.0.1:8000:8000 one-line-a-day:latest
 ```
+
+To run the frontend cd to ./frontend and run 
+
+`npm run dev`
