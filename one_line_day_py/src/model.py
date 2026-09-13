@@ -12,6 +12,14 @@ class User(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     name: str
+    email: str = Field(unique=True, index=True)
+    hashed_password: str
+
+
+class UserPublic(SQLModel):
+    id: UUID
+    name: str
+    email: str
 
 
 class JournalEntry(SQLModel, table=True):

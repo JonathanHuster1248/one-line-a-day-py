@@ -1,8 +1,24 @@
 import { useEffect, useState } from "react";
-import { getGreeting, getJournal, getJournals, createJournalEntry } from "./greeting";
+import { getJournals, createJournalEntry } from "./greeting";
+import { useAuth } from "./AuthContext";
+import { AuthForms } from "./AuthForms";
 
 export default function App() {
-    // const [greeting, setGreeting] = useState("Loading...");
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!user) {
+        return <AuthForms />;
+    }
+
+    return <JournalApp />;
+}
+
+function JournalApp() {
+    const { logout } = useAuth();
     const [journals, setJournals] = useState<Journal[] | null>(null)
     const [selectedDate, setSelectedDate] = useState<string>(() => {
         const today = new Date();
@@ -54,6 +70,7 @@ export default function App() {
 
     return (
         <div>
+            <button type="button" onClick={() => logout()}>Log Out</button>
             <div className="date-selector">
                 <label htmlFor="date-input">Select Date: </label>
                 <input

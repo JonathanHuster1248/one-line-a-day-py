@@ -26,6 +26,7 @@ class UserSqlDb:
         with Session(self.engine) as session:
             session.add(user)
             session.commit()
+            session.refresh(user)
         return user
 
     async def list_users(self, **kwargs) -> list[User]:
@@ -46,6 +47,11 @@ class UserSqlDb:
             statement = select(User).where(User.name == name)
             user = session.exec(statement).one()
             return user
+
+    async def get_user_by_email(self, email: str) -> Optional[User]:
+        with Session(self.engine) as session:
+            statement = select(User).where(User.email == email)
+            return session.exec(statement).one_or_none()
 
     async def update_user(self, updated_user: User) -> User:
         with Session(self.engine) as session:
