@@ -3,6 +3,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from litestar import Controller, get, post, put, delete
+from litestar.params import FromQuery
 from litestar.response import File, Redirect
 
 from datetime import date
@@ -84,8 +85,8 @@ class JournalController(Controller):
         return uploaded_entry
 
     @get("/")
-    async def list_entries(self) -> list[JournalEntry]:
-        entries = await journals_db.list_entries()
+    async def list_entries(self, author_id: FromQuery[UUID | None] = None, month: FromQuery[int | None] = None, day: FromQuery[int | None] = None) -> list[JournalEntry]:
+        entries = await journals_db.list_entries(author_id, month, day)
         return entries
 
     @get("/{entry_id:uuid}")
