@@ -1,33 +1,54 @@
 import { useEffect, useState } from "react";
-import { getGreeting, getJournal } from "./greeting";
+import { getGreeting, getJournal, getJournals} from "./greeting";
 
 export default function App() {
     // const [greeting, setGreeting] = useState("Loading...");
-    const [entry, setEntry] = useState<Journal | null>(null)
+    const [journals, setJournals] = useState<Journal[] | null>(null)
 
     useEffect(() => {
-        async function loadEntry() {
+        async function loadJournals() {
             try {
-                const journalId = "20f06456-00e3-47f8-a6e1-cbcb2d31bb20";
-                const journalData = await getJournal(journalId);
+                // const journalId = "20f06456-00e3-47f8-a6e1-cbcb2d31bb20";
+                // const journalData = await getJournal(journalId);
+                const journals = await getJournals();
 
-                setEntry(journalData);
+                setJournals(journals);
             } catch (error) {
                 console.error("Failed to load journal:", error);
             }
         }
 
-        loadEntry();
+        loadJournals();
     }, []);
     
-    if (entry === null) {
+    if (journals === null) {
         return <div>Awaiting Entry</div>;
     }
 
     return (
+        <div>
+            {journals.map((journal) => (
+                <JournalBox
+                    key={journal.id}
+                    journal={journal}
+                />
+            ))}
+        </div>
+    );
+
+    // return (
+    //     <div className="box">
+    //         <h2>{entry.date}</h2>
+    //         <p>{entry.message}</p>
+    //     </div>
+    // );
+}
+
+function JournalBox({ journal }: { journal: Journal }) {
+    return (
         <div className="box">
-            <h2>{entry.date}</h2>
-            <p>{entry.message}</p>
+            <h2>{journal.date}</h2>
+            <p>{journal.message}</p>
         </div>
     );
 }

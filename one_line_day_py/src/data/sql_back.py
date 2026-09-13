@@ -78,13 +78,20 @@ class JournalSqlDb:
             session.refresh(entry)
             return entry
 
-    async def list_entries(self, author_id: Optional[UUID] = None, month: Optional[int] = None, day: Optional[int] = None) -> list[JournalEntry]:
+    async def list_entries(
+        self,
+        author_id: Optional[UUID] = None,
+        month: Optional[int] = None,
+        day: Optional[int] = None,
+    ) -> list[JournalEntry]:
         with Session(self.engine) as session:
             statement = select(JournalEntry)
             if author_id:
                 statement = statement.where(JournalEntry.author_id == author_id)
             if month:
-                statement = statement.where(extract("month", JournalEntry.date) == month)
+                statement = statement.where(
+                    extract("month", JournalEntry.date) == month
+                )
             if day:
                 statement = statement.where(extract("day", JournalEntry.date) == day)
             entries = session.exec(statement)
