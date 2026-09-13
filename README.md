@@ -6,12 +6,13 @@ To run the main API call
 python -m one_line_day_py.main
 ```
 
-A Docker implementation also exists. Run the build command below to create the image then run the run command to use that image:
+A Docker implementation also exists, with separate images for the backend (`backend.Dockerfile`) and frontend (`frontend/Dockerfile`). Use Docker Compose to build and run both together:
 
 ```
-docker build . -t one-line-a-day:latest
-docker run -p 127.0.0.1:8000:8000 one-line-a-day:latest
+docker compose up --build
 ```
+
+This serves the backend at `http://localhost:8000` and the frontend at `http://localhost:3000`, and bind-mounts `one_line_day_py/src/data/journal_entries.db` into the backend container so the database persists on the host.
 
 To run the frontend cd to ./frontend and run 
 

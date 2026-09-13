@@ -18,8 +18,9 @@ wheels/
 
 # Databases in data
 # TODO: Update this to only OMIT .py files instead
-/**/data/*.json
-/**/data/*.db
+/**/data/*
+!/**/data/*.py
+one_line_day_py/src/data/.sessions
 
 
 # Front end
