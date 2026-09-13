@@ -17,18 +17,24 @@ export async function getJournal(id: string): Promise<Journal> {
     return await response.json() as Journal;
 }
 
-export async function getJournals(): Promise<Journal[]> {
+export async function getJournals(month?: number, day?: number, year?: number): Promise<Journal[]> {
     const id = "3665e0d9-efb8-4d0f-8ccd-a70f8a3a0e4a"
-    const month = 7
-    const day = 25
+    const selectedMonth = month ?? 7
+    const selectedDay = day ?? 25
+    const selectedYear = year ?? new Date().getFullYear()
 
-    const response = await fetch(`http://localhost:8000/journals/?author_id=${id}&month=${month}&day=${day}`);
+    let url = `http://localhost:8000/journals/?author_id=${id}&month=${selectedMonth}&day=${selectedDay}`;
+    if (year !== undefined) {
+        url += `&year=${selectedYear}`;
+    }
+
+    const response = await fetch(url);
 
     if (!response.ok) {
         throw new Error(
             `Failed to load journals: ${response.status}`
         );
     }
-    
+
     return (await response.json()) as Journal[];
 }

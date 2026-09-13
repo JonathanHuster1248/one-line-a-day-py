@@ -3,7 +3,35 @@
 <html>
 <head>
     <link rel="stylesheet" href="style.css">
-    <title>Hello World</title>
+    <title>One Line a Day</title>
+    <style>
+        .date-selector {
+            padding: 1rem;
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-selector label {
+            font-weight: bold;
+        }
+
+        .date-selector input {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .date-selector input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 5px rgba(0, 102, 204, 0.5);
+        }
+    </style>
 </head>
 
 <body>

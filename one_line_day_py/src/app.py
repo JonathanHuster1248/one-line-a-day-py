@@ -90,8 +90,9 @@ class JournalController(Controller):
         author_id: FromQuery[UUID | None] = None,
         month: FromQuery[int | None] = None,
         day: FromQuery[int | None] = None,
+        year: FromQuery[int | None] = None,
     ) -> list[JournalEntry]:
-        entries = await journals_db.list_entries(author_id, month, day)
+        entries = await journals_db.list_entries(author_id, month, day, year)
         return entries
 
     @get("/{entry_id:uuid}")

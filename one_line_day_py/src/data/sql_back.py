@@ -83,6 +83,7 @@ class JournalSqlDb:
         author_id: Optional[UUID] = None,
         month: Optional[int] = None,
         day: Optional[int] = None,
+        year: Optional[int] = None,
     ) -> list[JournalEntry]:
         with Session(self.engine) as session:
             statement = select(JournalEntry)
@@ -94,6 +95,8 @@ class JournalSqlDb:
                 )
             if day:
                 statement = statement.where(extract("day", JournalEntry.date) == day)
+            if year:
+                statement = statement.where(extract("year", JournalEntry.date) == year)
             entries = session.exec(statement)
             return list(entries)
 

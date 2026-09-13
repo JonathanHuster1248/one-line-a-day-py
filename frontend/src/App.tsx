@@ -4,13 +4,19 @@ import { getGreeting, getJournal, getJournals} from "./greeting";
 export default function App() {
     // const [greeting, setGreeting] = useState("Loading...");
     const [journals, setJournals] = useState<Journal[] | null>(null)
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    });
 
     useEffect(() => {
         async function loadJournals() {
             try {
-                // const journalId = "20f06456-00e3-47f8-a6e1-cbcb2d31bb20";
-                // const journalData = await getJournal(journalId);
-                const journals = await getJournals();
+                const [year, month, day] = selectedDate.split('-').map(Number);
+                const journals = await getJournals(month, day);
 
                 setJournals(journals);
             } catch (error) {
@@ -19,7 +25,7 @@ export default function App() {
         }
 
         loadJournals();
-    }, []);
+    }, [selectedDate]);
     
     if (journals === null) {
         return <div>Awaiting Entry</div>;
@@ -27,6 +33,15 @@ export default function App() {
 
     return (
         <div>
+            <div className="date-selector">
+                <label htmlFor="date-input">Select Date: </label>
+                <input
+                    id="date-input"
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                />
+            </div>
             {journals.map((journal) => (
                 <JournalBox
                     key={journal.id}
@@ -36,12 +51,6 @@ export default function App() {
         </div>
     );
 
-    // return (
-    //     <div className="box">
-    //         <h2>{entry.date}</h2>
-    //         <p>{entry.message}</p>
-    //     </div>
-    // );
 }
 
 function JournalBox({ journal }: { journal: Journal }) {
