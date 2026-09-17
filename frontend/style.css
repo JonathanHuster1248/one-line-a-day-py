@@ -1,18 +1,72 @@
 
-.app-container {
+body {
+    margin: 0;
+    background-color: #dfe4de;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+.page-backdrop {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    box-sizing: border-box;
+}
+
+.journal-page {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background-color: #fffdf8;
+    border-radius: 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    padding: 2.5rem 2.75rem 2.5rem 2.25rem;
+    box-sizing: border-box;
+}
+
+.journal-page::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 14px;
+    height: 100%;
+    background: linear-gradient(to bottom, #cfe8d5, #6fae7f, #cfe8d5);
+    opacity: 0.65;
+    border-radius: 0 6px 6px 0;
+}
+
+.logout-button {
+    position: absolute;
+    top: 1rem;
+    right: 1.75rem;
+}
+
+.page-title {
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #2e5e3a;
+    font-size: 1.8rem;
+}
+
+.entries {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .new-entry-form {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 0.5rem;
 }
 
 .box {
-    width: 200px;
+    width: 100%;
     height: auto;
     min-height: 100px;
     display: flex;
@@ -23,7 +77,8 @@
     border: 3px solid #228B22;
     border-radius: 12px;
     padding: 10px;
-    margin: 10px;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .box h2 {

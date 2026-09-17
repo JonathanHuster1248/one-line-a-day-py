@@ -69,38 +69,49 @@ function JournalApp() {
     }
 
     return (
-        <div className="app-container">
-            <button type="button" onClick={() => logout()}>Log Out</button>
-            <div className="date-selector">
-                <label htmlFor="date-input">Select Date: </label>
-                <input
-                    id="date-input"
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                />
+        <div className="page-backdrop">
+            <div className="journal-page">
+                <button type="button" className="logout-button" onClick={() => logout()}>Log Out</button>
+                <h1 className="page-title">{formatMonthDay(selectedDate)}</h1>
+                <div className="date-selector">
+                    <label htmlFor="date-input">Select Date: </label>
+                    <input
+                        id="date-input"
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                    />
+                </div>
+                <div className="entries">
+                    {journals.map((journal) => (
+                        <JournalBox
+                            key={journal.id}
+                            journal={journal}
+                        />
+                    ))}
+                </div>
+                <form onSubmit={handleSubmit} className="new-entry-form">
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Write a new entry for this day..."
+                        disabled={isSubmitting}
+                    />
+                    <button type="submit" disabled={isSubmitting || !message.trim()}>
+                        {isSubmitting ? "Sending..." : "Send"}
+                    </button>
+                </form>
             </div>
-            {journals.map((journal) => (
-                <JournalBox
-                    key={journal.id}
-                    journal={journal}
-                />
-            ))}
-            <form onSubmit={handleSubmit} className="new-entry-form">
-                <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Write a new entry for this day..."
-                    disabled={isSubmitting}
-                />
-                <button type="submit" disabled={isSubmitting || !message.trim()}>
-                    {isSubmitting ? "Sending..." : "Send"}
-                </button>
-            </form>
         </div>
     );
 
+}
+
+function formatMonthDay(dateStr: string): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const monthName = new Date(year, month - 1, day).toLocaleString('en-US', { month: 'long' });
+    return `${monthName.toUpperCase()} ${day}`;
 }
 
 function JournalBox({ journal }: { journal: Journal }) {
