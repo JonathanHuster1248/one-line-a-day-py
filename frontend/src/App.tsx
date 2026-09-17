@@ -71,7 +71,18 @@ function JournalApp() {
     return (
         <div className="page-backdrop">
             <div className="journal-page">
-                <button type="button" className="logout-button" onClick={() => logout()}>Log Out</button>
+                <div className="page-header">
+                    <div className="date-selector">
+                        <label htmlFor="date-input">Select Date: </label>
+                        <input
+                            id="date-input"
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                        />
+                    </div>
+                    <button type="button" className="logout-button" onClick={() => logout()}>Log Out</button>
+                </div>
                 <div className="page-title-row">
                     <button
                         type="button"
@@ -106,15 +117,6 @@ function JournalApp() {
                     >
                         &#8677;
                     </button>
-                </div>
-                <div className="date-selector">
-                    <label htmlFor="date-input">Select Date: </label>
-                    <input
-                        id="date-input"
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                    />
                 </div>
                 <div className="entries">
                     {journals.map((journal) => (

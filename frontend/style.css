@@ -36,10 +36,29 @@ body {
     border-radius: 0 6px 6px 0;
 }
 
+.page-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
 .logout-button {
     position: absolute;
-    top: 1rem;
-    right: 1.75rem;
+    top: -0.75rem;
+    right: -0.5rem;
+    background-color: #eaf3ea;
+    color: #2e5e3a;
+    border: 2px solid #228B22;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #d9ead9;
 }
 
 .page-title-row {
@@ -94,6 +113,51 @@ body {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
+}
+
+.new-entry-form input {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #2e5e3a;
+    background-color: #eaf3ea;
+    border: 2px solid #228B22;
+    border-radius: 999px;
+    flex: 1;
+    min-width: 0;
+}
+
+.new-entry-form input:focus {
+    outline: none;
+    border-color: #2e5e3a;
+    box-shadow: 0 0 5px rgba(34, 139, 34, 0.5);
+}
+
+.new-entry-form input:disabled {
+    background-color: #f0f0ea;
+    color: #999;
+}
+
+.new-entry-form button {
+    padding: 0.6rem 1.1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #2e5e3a;
+    background-color: #eaf3ea;
+    border: 2px solid #228B22;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.new-entry-form button:hover:not(:disabled) {
+    background-color: #d9ead9;
+}
+
+.new-entry-form button:disabled {
+    color: #999;
+    border-color: #a9c8ac;
+    cursor: not-allowed;
 }
 
 .box {
