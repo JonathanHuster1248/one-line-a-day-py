@@ -69,7 +69,7 @@ function JournalApp() {
     }
 
     return (
-        <div>
+        <div className="app-container">
             <button type="button" onClick={() => logout()}>Log Out</button>
             <div className="date-selector">
                 <label htmlFor="date-input">Select Date: </label>

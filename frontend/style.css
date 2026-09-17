@@ -1,10 +1,47 @@
 
+.app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.new-entry-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .box {
     width: 200px;
-    height: 100px;
+    height: auto;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    background-color: white;
-    border: 2px solid blue;
+    text-align: center;
+    background-color: #fdfbf6;
+    border: 3px solid #228B22;
+    border-radius: 12px;
     padding: 10px;
     margin: 10px;
+}
+
+.box h2 {
+    margin: 0 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #228B22;
+    width: 100%;
+}
+
+.box p {
+    margin: 0;
+    width: 100%;
+    line-height: 1.6em;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(1.6em - 1px),
+        #228B22 calc(1.6em - 1px),
+        #228B22 1.6em
+    );
 }
