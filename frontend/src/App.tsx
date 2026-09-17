@@ -69,44 +69,117 @@ function JournalApp() {
     }
 
     return (
-        <div>
-            <button type="button" onClick={() => logout()}>Log Out</button>
-            <div className="date-selector">
-                <label htmlFor="date-input">Select Date: </label>
-                <input
-                    id="date-input"
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                />
+        <div className="page-backdrop">
+            <div className="journal-page">
+                <div className="page-header">
+                    <div className="date-selector">
+                        <label htmlFor="date-input">Select Date: </label>
+                        <input
+                            id="date-input"
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                        />
+                    </div>
+                    <button type="button" className="logout-button" onClick={() => logout()}>Log Out</button>
+                </div>
+                <div className="page-title-row">
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Previous year"
+                        onClick={() => setSelectedDate(shiftYear(selectedDate, -1))}
+                    >
+                        &#8676;
+                    </button>
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Previous day"
+                        onClick={() => setSelectedDate(shiftDate(selectedDate, -1))}
+                    >
+                        &#8592;
+                    </button>
+                    <h1 className="page-title">{formatMonthDay(selectedDate)}</h1>
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Next day"
+                        onClick={() => setSelectedDate(shiftDate(selectedDate, 1))}
+                    >
+                        &#8594;
+                    </button>
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Next year"
+                        onClick={() => setSelectedDate(shiftYear(selectedDate, 1))}
+                    >
+                        &#8677;
+                    </button>
+                </div>
+                <div className="entries">
+                    {journals.map((journal) => (
+                        <JournalBox
+                            key={journal.id}
+                            journal={journal}
+                        />
+                    ))}
+                </div>
+                <form onSubmit={handleSubmit} className="new-entry-form">
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Write a new entry for this day..."
+                        disabled={isSubmitting}
+                    />
+                    <button type="submit" disabled={isSubmitting || !message.trim()}>
+                        {isSubmitting ? "Sending..." : "Send"}
+                    </button>
+                </form>
             </div>
-            {journals.map((journal) => (
-                <JournalBox
-                    key={journal.id}
-                    journal={journal}
-                />
-            ))}
-            <form onSubmit={handleSubmit} className="new-entry-form">
-                <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Write a new entry for this day..."
-                    disabled={isSubmitting}
-                />
-                <button type="submit" disabled={isSubmitting || !message.trim()}>
-                    {isSubmitting ? "Sending..." : "Send"}
-                </button>
-            </form>
         </div>
     );
 
 }
 
+function formatMonthDay(dateStr: string): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const monthName = new Date(year, month - 1, day).toLocaleString('en-US', { month: 'long' });
+    return `${monthName.toUpperCase()} ${day}`;
+}
+
+function shiftDate(dateStr: string, deltaDays: number): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + deltaDays);
+
+    const newYear = date.getFullYear();
+    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const newDay = String(date.getDate()).padStart(2, '0');
+    return `${newYear}-${newMonth}-${newDay}`;
+}
+
+function shiftYear(dateStr: string, deltaYears: number): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setFullYear(date.getFullYear() + deltaYears);
+
+    const newYear = date.getFullYear();
+    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const newDay = String(date.getDate()).padStart(2, '0');
+    return `${newYear}-${newMonth}-${newDay}`;
+}
+
+function formatYear(dateStr: string): string {
+    return dateStr.split('-')[0];
+}
+
 function JournalBox({ journal }: { journal: Journal }) {
     return (
         <div className="box">
-            <h2>{journal.date}</h2>
+            <h2>{formatYear(journal.date)}</h2>
             <p>{journal.message}</p>
         </div>
     );
