@@ -72,7 +72,41 @@ function JournalApp() {
         <div className="page-backdrop">
             <div className="journal-page">
                 <button type="button" className="logout-button" onClick={() => logout()}>Log Out</button>
-                <h1 className="page-title">{formatMonthDay(selectedDate)}</h1>
+                <div className="page-title-row">
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Previous year"
+                        onClick={() => setSelectedDate(shiftYear(selectedDate, -1))}
+                    >
+                        &#8676;
+                    </button>
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Previous day"
+                        onClick={() => setSelectedDate(shiftDate(selectedDate, -1))}
+                    >
+                        &#8592;
+                    </button>
+                    <h1 className="page-title">{formatMonthDay(selectedDate)}</h1>
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Next day"
+                        onClick={() => setSelectedDate(shiftDate(selectedDate, 1))}
+                    >
+                        &#8594;
+                    </button>
+                    <button
+                        type="button"
+                        className="date-nav-button"
+                        aria-label="Next year"
+                        onClick={() => setSelectedDate(shiftYear(selectedDate, 1))}
+                    >
+                        &#8677;
+                    </button>
+                </div>
                 <div className="date-selector">
                     <label htmlFor="date-input">Select Date: </label>
                     <input
@@ -114,10 +148,36 @@ function formatMonthDay(dateStr: string): string {
     return `${monthName.toUpperCase()} ${day}`;
 }
 
+function shiftDate(dateStr: string, deltaDays: number): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + deltaDays);
+
+    const newYear = date.getFullYear();
+    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const newDay = String(date.getDate()).padStart(2, '0');
+    return `${newYear}-${newMonth}-${newDay}`;
+}
+
+function shiftYear(dateStr: string, deltaYears: number): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setFullYear(date.getFullYear() + deltaYears);
+
+    const newYear = date.getFullYear();
+    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const newDay = String(date.getDate()).padStart(2, '0');
+    return `${newYear}-${newMonth}-${newDay}`;
+}
+
+function formatYear(dateStr: string): string {
+    return dateStr.split('-')[0];
+}
+
 function JournalBox({ journal }: { journal: Journal }) {
     return (
         <div className="box">
-            <h2>{journal.date}</h2>
+            <h2>{formatYear(journal.date)}</h2>
             <p>{journal.message}</p>
         </div>
     );
