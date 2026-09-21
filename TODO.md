@@ -6,8 +6,20 @@ One line a day
     - Add components and schemas
 	- Tagging People/Groups
 - Dockerize
-	- Add volumes outside the container
 	- Allow env variables
 - Enable photo storage
-- Create front end
 - Deploy and utilize mine
+- Github/infra
+  - Rename primary to main
+  - squash commit by default
+  - delete branch merge as default
+  - Disallow commit to main
+  - Auto actions on merge
+    - Make docker images
+    - Deploy? 
+- Documentation
+  - Update readme and how to run
+  - Make a wiki? 
+- Testing
+  - Add backend testing
+  - Look into how frontend testing works?
