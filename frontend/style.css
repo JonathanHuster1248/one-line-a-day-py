@@ -161,6 +161,7 @@ body {
 }
 
 .box {
+    position: relative;
     width: 100%;
     height: auto;
     min-height: 100px;
@@ -195,4 +196,87 @@ body {
         #228B22 calc(1.6em - 1px),
         #228B22 1.6em
     );
+}
+
+.box-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.box-actions-view {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.35rem;
+}
+
+.edit-button,
+.delete-button,
+.save-button,
+.cancel-button {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.box-actions-view .edit-button,
+.box-actions-view .delete-button {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    opacity: 0.55;
+    transition: opacity 0.15s ease;
+}
+
+.box-actions-view .edit-button:hover,
+.box-actions-view .delete-button:hover:not(:disabled) {
+    opacity: 1;
+}
+
+.edit-button,
+.cancel-button {
+    background-color: #ececec;
+    color: #333;
+    border: 2px solid #888;
+}
+
+.edit-button:hover,
+.cancel-button:hover {
+    background-color: #dcdcdc;
+}
+
+.delete-button {
+    background-color: #fbe7e7;
+    color: #a11;
+    border: 2px solid #cc2222;
+}
+
+.delete-button:hover:not(:disabled) {
+    background-color: #f6caca;
+}
+
+.delete-button:disabled {
+    color: #c98a8a;
+    border-color: #e2a9a9;
+    cursor: not-allowed;
+}
+
+.save-button {
+    background-color: #eaf3ea;
+    color: #2e5e3a;
+    border: 2px solid #228B22;
+}
+
+.save-button:hover:not(:disabled) {
+    background-color: #d9ead9;
+}
+
+.save-button:disabled {
+    color: #999;
+    border-color: #a9c8ac;
+    cursor: not-allowed;
 }
