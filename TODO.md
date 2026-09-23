@@ -5,15 +5,17 @@ One line a day
     - Make photos table for separate responsibilities
     - Add components and schemas
 	- Tagging People/Groups
+  - Photos assigned to Journals 
+  - Photos accessible via backend
+- FE 
+  - Allow edit and delete buttons on journals
+  - Display photos with each journal
 - Dockerize
 	- Allow env variables
 - Enable photo storage
 - Deploy and utilize mine
 - Github/infra
-  - Rename primary to main
   - squash commit by default
-  - delete branch merge as default
-  - Disallow commit to main
   - Auto actions on merge
     - Make docker images
     - Deploy? 

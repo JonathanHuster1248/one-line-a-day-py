@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getJournals, createJournalEntry } from "./greeting";
+import { getJournals, createJournalEntry, updateJournalEntry, deleteJournalEntry } from "./greeting";
 import { useAuth } from "./AuthContext";
 import { AuthForms } from "./AuthForms";
 
@@ -63,7 +63,19 @@ function JournalApp() {
             setIsSubmitting(false);
         }
     };
-    
+
+    const handleUpdate = async (journal: Journal, date: string, message: string) => {
+        const updated = await updateJournalEntry(journal.id, date, message);
+        setJournals((prev) =>
+            prev ? prev.map((j) => (j.id === updated.id ? updated : j)) : prev
+        );
+    };
+
+    const handleDelete = async (journal: Journal) => {
+        await deleteJournalEntry(journal.id);
+        setJournals((prev) => (prev ? prev.filter((j) => j.id !== journal.id) : prev));
+    };
+
     if (journals === null) {
         return <div>Awaiting Entry</div>;
     }
@@ -123,6 +135,8 @@ function JournalApp() {
                         <JournalBox
                             key={journal.id}
                             journal={journal}
+                            onUpdate={handleUpdate}
+                            onDelete={handleDelete}
                         />
                     ))}
                 </div>
@@ -176,9 +190,96 @@ function formatYear(dateStr: string): string {
     return dateStr.split('-')[0];
 }
 
-function JournalBox({ journal }: { journal: Journal }) {
+function JournalBox({
+    journal,
+    onUpdate,
+    onDelete,
+}: {
+    journal: Journal;
+    onUpdate: (journal: Journal, date: string, message: string) => Promise<void>;
+    onDelete: (journal: Journal) => Promise<void>;
+}) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editDate, setEditDate] = useState(journal.date);
+    const [editMessage, setEditMessage] = useState(journal.message);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const startEditing = () => {
+        setEditDate(journal.date);
+        setEditMessage(journal.message);
+        setIsEditing(true);
+    };
+
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editMessage.trim()) return;
+
+        setIsSaving(true);
+        try {
+            await onUpdate(journal, editDate, editMessage);
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Failed to update journal entry:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm("Delete this journal entry?")) return;
+
+        setIsDeleting(true);
+        try {
+            await onDelete(journal);
+        } catch (error) {
+            console.error("Failed to delete journal entry:", error);
+            setIsDeleting(false);
+        }
+    };
+
+    if (isEditing) {
+        return (
+            <form className="box" onSubmit={handleSave}>
+                <input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    disabled={isSaving}
+                />
+                <input
+                    type="text"
+                    value={editMessage}
+                    onChange={(e) => setEditMessage(e.target.value)}
+                    disabled={isSaving}
+                />
+                <div className="box-actions">
+                    <button type="submit" className="save-button" disabled={isSaving || !editMessage.trim()}>
+                        {isSaving ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                        type="button"
+                        className="cancel-button"
+                        onClick={() => setIsEditing(false)}
+                        disabled={isSaving}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        );
+    }
+
     return (
         <div className="box">
+            <div className="box-actions-view">
+                <button type="button" className="edit-button" onClick={startEditing}>
+                    Edit
+                </button>
+                <button type="button" className="delete-button" onClick={handleDelete} disabled={isDeleting}>
+                    {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+            </div>
             <h2>{formatYear(journal.date)}</h2>
             <p>{journal.message}</p>
         </div>

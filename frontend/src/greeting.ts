@@ -59,3 +59,36 @@ export async function createJournalEntry(date: string, message: string): Promise
 
     return (await response.json()) as Journal;
 }
+
+export async function updateJournalEntry(id: string, date: string, message: string): Promise<Journal> {
+    const params = new URLSearchParams({
+        input_date: date,
+        message: message,
+    });
+
+    const response = await fetch(`${API_BASE_URL}/journals/${id}?${params.toString()}`, {
+        method: "PUT",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to update journal entry: ${response.status}`
+        );
+    }
+
+    return (await response.json()) as Journal;
+}
+
+export async function deleteJournalEntry(id: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/journals/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to delete journal entry: ${response.status}`
+        );
+    }
+}
