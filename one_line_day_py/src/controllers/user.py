@@ -6,7 +6,7 @@ from uuid import UUID
 from litestar import Controller, delete, get, put
 
 from .. import dependencies
-from ..model import User, UserPublic
+from ..model import UserPublic
 from ..schemas import to_public_user
 
 
@@ -32,17 +32,7 @@ class UserController(Controller):
     async def update_user(
         self, user_id: UUID, name: Optional[str] = None
     ) -> UserPublic:
-        existing_user = await dependencies.users_db.get_user_by_id(user_id)
-
-        name = name or existing_user.name
-
-        updated_user = User(
-            id=user_id,
-            name=name,
-            email=existing_user.email,
-            hashed_password=existing_user.hashed_password,
-        )
-        user = await dependencies.users_db.update_user(updated_user)
+        user = await dependencies.users_db.update_user(user_id, name=name)
         return to_public_user(user)
 
     @delete("/{user_id:uuid}")

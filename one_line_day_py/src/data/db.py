@@ -53,12 +53,14 @@ class UserDb:
             statement = select(User).where(User.email == email)
             return session.exec(statement).one_or_none()
 
-    async def update_user(self, updated_user: User) -> User:
+    async def update_user(self, user_id: UUID, name: Optional[str] = None) -> User:
         with Session(self.engine) as session:
-            statement = select(User).where(User.id == updated_user.id)
+            statement = select(User).where(User.id == user_id)
             user = session.exec(statement).one()
 
-            user.name = updated_user.name
+            if name is not None:
+                user.name = name
+
             session.commit()
             session.refresh(user)
 
