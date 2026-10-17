@@ -1,3 +1,4 @@
+from importlib.metadata import version
 from pathlib import Path
 
 import uvicorn
@@ -69,7 +70,7 @@ def make_app():
         openapi_config=OpenAPIConfig(
             title="One Line a Day",
             description="Backend of one line a day application",
-            version="0.0.1",
+            version=version("one-line-day-py"),
             render_plugins=[SwaggerRenderPlugin()],
         ),
         on_app_init=[session_auth.on_app_init],
