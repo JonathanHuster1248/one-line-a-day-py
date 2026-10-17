@@ -1,9 +1,7 @@
 import pytest
 from litestar.testing import TestClient
 
-import one_line_day_py.src.dependencies as dependencies
 from one_line_day_py.main import make_app
-from one_line_day_py.src.data.db import JournalDb, UserDb
 from one_line_day_py.src.settings import settings
 
 
@@ -11,8 +9,6 @@ from one_line_day_py.src.settings import settings
 def app(tmp_path, monkeypatch):
     db_path = str(tmp_path / "test.db")
     monkeypatch.setattr(settings, "db_path", db_path)
-    monkeypatch.setattr(dependencies, "users_db", UserDb(db_path))
-    monkeypatch.setattr(dependencies, "journals_db", JournalDb(db_path))
     return make_app()
 
 

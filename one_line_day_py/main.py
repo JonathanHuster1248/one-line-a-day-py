@@ -10,12 +10,20 @@ from .src.controllers import (
 )
 from litestar import Litestar
 from litestar.config.cors import CORSConfig
+from litestar.datastructures import State
+from litestar.di import Provide
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import SwaggerRenderPlugin
 from litestar.security.session_auth import SessionAuth
 from litestar.stores.file import FileStore
 
+from .src.dependencies import (
+    create_journals_db,
+    create_users_db,
+    provide_journals_db,
+    provide_users_db,
+)
 from .src.exceptions import exception_handlers
 from .src.settings import settings
 
@@ -41,6 +49,13 @@ def make_app():
             JournalController,
             UserController,
         ],
+        dependencies={
+            "users_db": Provide(provide_users_db, sync_to_thread=False),
+            "journals_db": Provide(provide_journals_db, sync_to_thread=False),
+        },
+        state=State(
+            {"users_db": create_users_db(), "journals_db": create_journals_db()}
+        ),
         exception_handlers=exception_handlers,
         cors_config=CORSConfig(
             allow_origins=settings.cors_allowed_origins,
