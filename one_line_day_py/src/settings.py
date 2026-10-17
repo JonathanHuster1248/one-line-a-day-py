@@ -11,6 +11,7 @@ DEFAULT_DB_PATH = str(Path(__file__).parent.resolve() / "data" / "journal_entrie
 class CoreSettings(BaseSettings):
     db_path: str = DEFAULT_DB_PATH
     # TODO: Set db_path to be a Path type (unsure why I didn't have that already)
+    debug: bool = True  # DEBUG=false in prod (disables Litestar's debug tracebacks)
     session_cookie_secure: bool = False  # SESSION_COOKIE_SECURE=true in prod (HTTPS)
     cors_allowed_origins: list[str] = ["http://localhost:5173"]  # CORS_ALLOWED_ORIGINS
     # Matches any localhost/127.0.0.1 origin regardless of port, so local dev works

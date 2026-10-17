@@ -76,7 +76,7 @@ def make_app():
                 Path(settings.db_path).parent / ".sessions", create_directories=True
             )
         },
-        debug=True,
+        debug=settings.debug,
     )
 
 
