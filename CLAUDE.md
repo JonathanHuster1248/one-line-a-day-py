@@ -3,7 +3,9 @@ A backend and frontend journal application that enables the addition of new jour
 
 ## Commands
 - Dev frontend: `npm run dev` (run from `frontend/`)
-- Build frontend: `npm run build` (run from `frontend/`)
+- Build frontend: `npm run build` (run from `frontend/`; type-checks via `tsc --noEmit` before `vite build`)
+- Typecheck frontend only: `npm run typecheck` (run from `frontend/`)
+- Frontend tests: `npm run test` (Vitest + React Testing Library, run from `frontend/`); `npm run test:watch` for watch mode
 - Dev backend: `.venv/bin/python -m one_line_day_py.main`
 - Backend tests: `.venv/bin/pytest` (coverage via `pytest-cov`, see `.coverage`)
 - Lint/format (backend): `ruff check --fix` / `ruff format`, wired up as pre-commit hooks (`.pre-commit-config.yaml`)
@@ -32,16 +34,19 @@ Python 3.12+, using Litestar (API framework) + SQLModel/SQLAlchemy (ORM) + uvico
 - Swagger UI is available at `/schema/swagger/` when the server is running.
 
 ### Frontend (`frontend/`)
-React 19 + TypeScript, built with Vite.
+React 19 + TypeScript, built with Vite. Tested with Vitest + React Testing Library (`src/test/setup.ts` wires up `@testing-library/jest-dom` matchers and RTL cleanup); `*.test.ts`/`*.test.tsx` files sit next to the module they cover.
 - `src/main.tsx` — mounts `<App />` (wrapped in `<AuthProvider>`) into `#root`.
-- `src/App.tsx` — gated by auth: renders `<AuthForms />` while logged out, otherwise the journal UI. The journal UI has a date picker with prev/next day and prev/next year navigation, lists same-day entries (`JournalBox` per entry) for the selected month/day, and supports inline create/edit/delete plus logout.
+- `src/App.tsx` — just the auth gate: renders `<AuthForms />` while logged out, otherwise `<JournalApp />`.
+- `src/JournalApp.tsx` — the journal page: date picker with prev/next day and prev/next year navigation, loads/creates entries via `src/journals.ts`, lists same-day entries (`JournalBox` per entry) for the selected month/day, and surfaces load/create errors inline. Logout button lives here.
+- `src/JournalBox.tsx` — per-entry card component; view mode plus inline edit/delete, with its own error surfacing on failed save/delete.
+- `src/date.ts` — pure date helpers used by `JournalApp`/`JournalBox` (`todayISODate`, `toISODate`, `formatMonthDay`, `formatYear`, `shiftDate`, `shiftYear`); covered by `src/date.test.ts`.
 - `src/AuthContext.tsx` — React context (`AuthProvider`/`useAuth`) exposing `user`, `loading`, `login`, `signup`, `logout`; loads the current user on mount via `getCurrentUser`.
 - `src/AuthForms.tsx` — combined login/signup form UI, toggles between modes.
 - `src/auth.ts` — API client for `/auth/*` (`signup`, `login`, `logout`, `getCurrentUser`); all calls use `credentials: "include"` so the session cookie is sent/stored.
 - `src/config.ts` — `API_BASE_URL`, read from `VITE_API_BASE_URL` (falls back to `http://localhost:8000`).
-- `src/greeting.ts` — API client functions for journals (`getJournal`, `getJournals`, `createJournalEntry`, `updateJournalEntry`, `deleteJournalEntry`). Note there's still a duplicate `Journal` interface here and in `models.ts` — `models.ts`'s version remains unused (import is commented out).
-- `src/models.ts` — shared `Journal` type (still not consistently used — see above).
-- No routing or state management library yet; state is local `useState`/`useEffect` in `App.tsx`/`AuthContext.tsx`.
+- `src/journals.ts` — API client functions for journals (`getJournal`, `getJournals`, `createJournalEntry`, `updateJournalEntry`, `deleteJournalEntry`); `createJournalEntry`/`updateJournalEntry` intentionally send `date`/`message` as query params (`URLSearchParams`), matching how `JournalController.create_entry`/`update_entry` bind those scalar args on the backend — not a bug, don't "fix" it to a JSON body.
+- `src/models.ts` — the single `Journal` type, imported wherever needed (previously duplicated in `greeting.ts`, now resolved).
+- No routing or state management library yet; state is local `useState`/`useEffect` in `JournalApp.tsx`/`AuthContext.tsx`.
 
 ### Cross-cutting notes
 - No shared type generation between backend and frontend — the `Journal` TS interface is hand-kept in sync with the `JournalEntry` SQLModel.

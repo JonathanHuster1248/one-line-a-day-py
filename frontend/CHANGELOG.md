@@ -2,6 +2,21 @@
 
 All notable changes to the frontend are documented here.
 
+## [0.2.0] - 2026-10-17
+
+Split `App.tsx` responsibilities, add frontend test suite
+
+### Added
+- Test suite via Vitest + React Testing Library (`npm run test`/`test:watch`), with `src/test/setup.ts` wiring up `@testing-library/jest-dom` and RTL cleanup; new tests cover `JournalApp`, `AuthForms`, and `date.ts` helpers.
+- `src/date.ts` extracted as pure date helpers (`todayISODate`, `toISODate`, `formatMonthDay`, `formatYear`, `shiftDate`, `shiftYear`), previously inlined in `App.tsx`.
+- `src/JournalBox.tsx` extracted as its own per-entry card component (view mode plus inline edit/delete, with its own error surfacing).
+- `npm run typecheck` script; `npm run build` now type-checks via `tsc --noEmit` before `vite build`.
+
+### Changed
+- `App.tsx` reduced to just the auth gate; journal page logic moved into the new `JournalApp.tsx`.
+- `greeting.ts` renamed to `journals.ts` as the API client for journal endpoints.
+- `models.ts` now holds the single `Journal` type shared across modules instead of duplicating it in `greeting.ts`.
+
 ## [0.1.0] - 2026-09-16
 
 Journal page redesign
