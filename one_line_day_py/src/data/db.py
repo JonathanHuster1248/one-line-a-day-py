@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 from ..model import JournalEntry, User
@@ -120,16 +121,21 @@ class JournalDb:
             entry = session.exec(statement).one()
             return entry.author_id
 
-    async def update_entry(self, updated_entry: JournalEntry) -> JournalEntry:
+    async def update_entry(
+        self,
+        entry_id: UUID,
+        date: Optional[date] = None,
+        message: Optional[str] = None,
+    ) -> JournalEntry:
         with Session(self.engine) as session:
-            statement = select(JournalEntry).where(JournalEntry.id == updated_entry.id)
+            statement = select(JournalEntry).where(JournalEntry.id == entry_id)
             entry = session.exec(statement).one()
 
-            entry.author_id = updated_entry.author_id
-            entry.message = updated_entry.message
-            entry.date = updated_entry.date
+            if date is not None:
+                entry.date = date
+            if message is not None:
+                entry.message = message
 
-            session.add(entry)
             session.commit()
             session.refresh(entry)
 

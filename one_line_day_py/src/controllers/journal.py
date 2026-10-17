@@ -61,20 +61,10 @@ class JournalController(Controller):
         input_date: Optional[date] = None,
         message: Optional[str] = None,
     ) -> JournalEntry:
-        existing_entry = await _get_owned_entry(entry_id, request.user.id)
-
-        input_date = input_date or existing_entry.date
-        message = message or existing_entry.message
-
-        updated_entry = JournalEntry(
-            id=entry_id,
-            author_id=existing_entry.author_id,
-            date=input_date,
-            message=message,
+        await _get_owned_entry(entry_id, request.user.id)
+        return await dependencies.journals_db.update_entry(
+            entry_id, date=input_date, message=message
         )
-        await dependencies.journals_db.update_entry(updated_entry)
-
-        return updated_entry
 
     @delete("/{entry_id:uuid}")
     async def delete_entry(self, request: Request, entry_id: UUID) -> None:
