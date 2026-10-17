@@ -9,11 +9,6 @@ interface Journal {
     message: string;
 }
 
-export async function getGreeting(): Promise<string> {
-    const response = await fetch(`${API_BASE_URL}/hello_world`, { credentials: "include" });
-    return await response.text();
-}
-
 export async function getJournal(id: string): Promise<Journal> {
     const response = await fetch(`${API_BASE_URL}/journals/${id}`, { credentials: "include" });
     return await response.json() as Journal;

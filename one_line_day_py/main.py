@@ -28,7 +28,6 @@ def make_app():
         exclude=[
             "^/schema",
             "^/favicon\\.ico$",
-            "^/hello_world$",
             "^/$",
             "^/auth/(login|signup|logout)$",
         ],
