@@ -1,6 +1,7 @@
-from pydantic_settings import BaseSettings
 from pathlib import Path
+
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 
@@ -19,6 +20,7 @@ class CoreSettings(BaseSettings):
     cors_allow_origin_regex: str = (
         r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"  # CORS_ALLOW_ORIGIN_REGEX
     )
+    log_level: str = "INFO"  # LOG_LEVEL
 
 
 settings = CoreSettings()

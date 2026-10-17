@@ -21,6 +21,7 @@ wheels/
 /**/data/*
 !/**/data/*.py
 one_line_day_py/src/data/.sessions
+one_line_day_py/src/data/.logs
 
 
 # Front end
