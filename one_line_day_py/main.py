@@ -1,21 +1,32 @@
+from importlib.metadata import version
 from pathlib import Path
 
 import uvicorn
-from .src.app import (
-    AuthController,
-    JournalController,
-    EntryController,
-    UserController,
-    retrieve_user_handler,
-)
 from litestar import Litestar
 from litestar.config.cors import CORSConfig
+from litestar.datastructures import State
+from litestar.di import Provide
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import SwaggerRenderPlugin
 from litestar.security.session_auth import SessionAuth
 from litestar.stores.file import FileStore
 
+from .src.controllers import (
+    AuthController,
+    JournalController,
+    RootController,
+    UserController,
+    retrieve_user_handler,
+)
+from .src.dependencies import (
+    create_journals_db,
+    create_users_db,
+    provide_journals_db,
+    provide_users_db,
+)
+from .src.exceptions import exception_handlers
+from .src.logging_config import create_logging_config, logging_middleware_config
 from .src.settings import settings
 
 
@@ -28,8 +39,8 @@ def make_app():
         exclude=[
             "^/schema",
             "^/favicon\\.ico$",
-            "^/hello_world$",
             "^/$",
+            "^/ping$",
             "^/auth/(login|signup|logout)$",
         ],
     )
@@ -37,10 +48,18 @@ def make_app():
     return Litestar(
         route_handlers=[
             AuthController,
-            EntryController,
+            RootController,
             JournalController,
             UserController,
         ],
+        dependencies={
+            "users_db": Provide(provide_users_db, sync_to_thread=False),
+            "journals_db": Provide(provide_journals_db, sync_to_thread=False),
+        },
+        state=State(
+            {"users_db": create_users_db(), "journals_db": create_journals_db()}
+        ),
+        exception_handlers=exception_handlers,
         cors_config=CORSConfig(
             allow_origins=settings.cors_allowed_origins,
             allow_origin_regex=settings.cors_allow_origin_regex,
@@ -51,7 +70,7 @@ def make_app():
         openapi_config=OpenAPIConfig(
             title="One Line a Day",
             description="Backend of one line a day application",
-            version="0.0.1",
+            version=version("one-line-day-py"),
             render_plugins=[SwaggerRenderPlugin()],
         ),
         on_app_init=[session_auth.on_app_init],
@@ -60,7 +79,9 @@ def make_app():
                 Path(settings.db_path).parent / ".sessions", create_directories=True
             )
         },
-        debug=True,
+        logging_config=create_logging_config(),
+        middleware=[logging_middleware_config.middleware],
+        debug=settings.debug,
     )
 
 

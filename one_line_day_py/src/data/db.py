@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 from ..model import JournalEntry, User
@@ -18,7 +19,7 @@ def init_db(db_path: str):
     return engine
 
 
-class UserSqlDb:
+class UserDb:
     def __init__(self, db_path: str):
         self.engine = init_db(db_path)
 
@@ -41,7 +42,7 @@ class UserSqlDb:
             user = session.exec(statement).one()
             return user
 
-    async def get_user_id_by_name(self, name: str) -> User:
+    async def get_user_by_name(self, name: str) -> User:
         # There's no check right now for users with the same name, but we should figure out how to make the searching more robust
         with Session(self.engine) as session:
             statement = select(User).where(User.name == name)
@@ -53,12 +54,14 @@ class UserSqlDb:
             statement = select(User).where(User.email == email)
             return session.exec(statement).one_or_none()
 
-    async def update_user(self, updated_user: User) -> User:
+    async def update_user(self, user_id: UUID, name: Optional[str] = None) -> User:
         with Session(self.engine) as session:
-            statement = select(User).where(User.id == updated_user.id)
+            statement = select(User).where(User.id == user_id)
             user = session.exec(statement).one()
 
-            user.name = updated_user.name
+            if name is not None:
+                user.name = name
+
             session.commit()
             session.refresh(user)
 
@@ -72,7 +75,7 @@ class UserSqlDb:
             session.commit()
 
 
-class JournalSqlDb:
+class JournalDb:
     def __init__(self, db_path: str):
         self.engine = init_db(db_path)
 
@@ -109,29 +112,34 @@ class JournalSqlDb:
     async def get_entry(self, entry_id: UUID) -> JournalEntry:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == entry_id)
-            user = session.exec(statement).one()
-            return user
+            entry = session.exec(statement).one()
+            return entry
 
     async def get_entry_author(self, entry_id: UUID) -> UUID:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == entry_id)
-            user = session.exec(statement).one()
-            return user.author_id
+            entry = session.exec(statement).one()
+            return entry.author_id
 
-    async def update_entry(self, updated_entry: JournalEntry) -> JournalEntry:
+    async def update_entry(
+        self,
+        entry_id: UUID,
+        date: Optional[date] = None,
+        message: Optional[str] = None,
+    ) -> JournalEntry:
         with Session(self.engine) as session:
-            statement = select(JournalEntry).where(JournalEntry.id == updated_entry.id)
-            user = session.exec(statement).one()
+            statement = select(JournalEntry).where(JournalEntry.id == entry_id)
+            entry = session.exec(statement).one()
 
-            user.author_id = updated_entry.author_id
-            user.message = updated_entry.message
-            user.date = updated_entry.date
+            if date is not None:
+                entry.date = date
+            if message is not None:
+                entry.message = message
 
-            session.add(user)
             session.commit()
-            session.refresh(user)
+            session.refresh(entry)
 
-            return user
+            return entry
 
     async def delete_entry(self, entry_id: UUID) -> None:
         with Session(self.engine) as session:

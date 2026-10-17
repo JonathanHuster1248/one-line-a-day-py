@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "one-line-day-py"
-version = "0.1.0"
+version = "0.2.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -23,4 +23,5 @@ dependencies = [
 dev = [
     "pre-commit>=4.6.0",
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
 ]
