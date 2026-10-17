@@ -1,10 +1,10 @@
 from pathlib import Path
 
 import uvicorn
-from .src.app import (
+from .src.controllers import (
     AuthController,
     JournalController,
-    EntryController,
+    RootController,
     UserController,
     retrieve_user_handler,
 )
@@ -37,7 +37,7 @@ def make_app():
     return Litestar(
         route_handlers=[
             AuthController,
-            EntryController,
+            RootController,
             JournalController,
             UserController,
         ],

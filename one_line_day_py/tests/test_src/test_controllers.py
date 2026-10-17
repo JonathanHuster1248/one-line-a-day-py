@@ -1,9 +1,10 @@
 import pytest
 from litestar.testing import TestClient
 
-import one_line_day_py.src.app as app_module
+import one_line_day_py.src.dependencies as dependencies
 from one_line_day_py.main import make_app
 from one_line_day_py.src.data.sql_back import JournalSqlDb, UserSqlDb
+from one_line_day_py.src.settings import settings
 
 ALICE = {"name": "Alice", "email": "alice@example.com", "password": "hunter22"}
 BOB = {"name": "Bob", "email": "bob@example.com", "password": "correct-horse"}
@@ -12,9 +13,9 @@ BOB = {"name": "Bob", "email": "bob@example.com", "password": "correct-horse"}
 @pytest.fixture
 def app(tmp_path, monkeypatch):
     db_path = str(tmp_path / "test.db")
-    monkeypatch.setattr(app_module.settings, "db_path", db_path)
-    monkeypatch.setattr(app_module, "users_db", UserSqlDb(db_path))
-    monkeypatch.setattr(app_module, "journals_db", JournalSqlDb(db_path))
+    monkeypatch.setattr(settings, "db_path", db_path)
+    monkeypatch.setattr(dependencies, "users_db", UserSqlDb(db_path))
+    monkeypatch.setattr(dependencies, "journals_db", JournalSqlDb(db_path))
     return make_app()
 
 

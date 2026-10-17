@@ -41,7 +41,7 @@ class UserSqlDb:
             user = session.exec(statement).one()
             return user
 
-    async def get_user_id_by_name(self, name: str) -> User:
+    async def get_user_by_name(self, name: str) -> User:
         # There's no check right now for users with the same name, but we should figure out how to make the searching more robust
         with Session(self.engine) as session:
             statement = select(User).where(User.name == name)
@@ -109,29 +109,29 @@ class JournalSqlDb:
     async def get_entry(self, entry_id: UUID) -> JournalEntry:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == entry_id)
-            user = session.exec(statement).one()
-            return user
+            entry = session.exec(statement).one()
+            return entry
 
     async def get_entry_author(self, entry_id: UUID) -> UUID:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == entry_id)
-            user = session.exec(statement).one()
-            return user.author_id
+            entry = session.exec(statement).one()
+            return entry.author_id
 
     async def update_entry(self, updated_entry: JournalEntry) -> JournalEntry:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == updated_entry.id)
-            user = session.exec(statement).one()
+            entry = session.exec(statement).one()
 
-            user.author_id = updated_entry.author_id
-            user.message = updated_entry.message
-            user.date = updated_entry.date
+            entry.author_id = updated_entry.author_id
+            entry.message = updated_entry.message
+            entry.date = updated_entry.date
 
-            session.add(user)
+            session.add(entry)
             session.commit()
-            session.refresh(user)
+            session.refresh(entry)
 
-            return user
+            return entry
 
     async def delete_entry(self, entry_id: UUID) -> None:
         with Session(self.engine) as session:
