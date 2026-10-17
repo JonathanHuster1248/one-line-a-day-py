@@ -1,35 +1,23 @@
 import { API_BASE_URL } from "./config";
-
-// import { Journal } from "./models"
-
-interface Journal {
-    id: string;
-    author_id: string;
-    date: string;
-    message: string;
-}
+import type { Journal } from "./models";
 
 export async function getJournal(id: string): Promise<Journal> {
     const response = await fetch(`${API_BASE_URL}/journals/${id}`, { credentials: "include" });
-    return await response.json() as Journal;
+    return (await response.json()) as Journal;
 }
 
 export async function getJournals(month?: number, day?: number, year?: number): Promise<Journal[]> {
-    const selectedMonth = month ?? 7
-    const selectedDay = day ?? 25
-    const selectedYear = year ?? new Date().getFullYear()
+    const params = new URLSearchParams();
+    if (month !== undefined) params.set("month", String(month));
+    if (day !== undefined) params.set("day", String(day));
+    if (year !== undefined) params.set("year", String(year));
 
-    let url = `${API_BASE_URL}/journals/?month=${selectedMonth}&day=${selectedDay}`;
-    if (year !== undefined) {
-        url += `&year=${selectedYear}`;
-    }
-
-    const response = await fetch(url, { credentials: "include" });
+    const response = await fetch(`${API_BASE_URL}/journals/?${params.toString()}`, {
+        credentials: "include",
+    });
 
     if (!response.ok) {
-        throw new Error(
-            `Failed to load journals: ${response.status}`
-        );
+        throw new Error(`Failed to load journals: ${response.status}`);
     }
 
     return (await response.json()) as Journal[];
@@ -47,9 +35,7 @@ export async function createJournalEntry(date: string, message: string): Promise
     });
 
     if (!response.ok) {
-        throw new Error(
-            `Failed to create journal entry: ${response.status}`
-        );
+        throw new Error(`Failed to create journal entry: ${response.status}`);
     }
 
     return (await response.json()) as Journal;
@@ -67,9 +53,7 @@ export async function updateJournalEntry(id: string, date: string, message: stri
     });
 
     if (!response.ok) {
-        throw new Error(
-            `Failed to update journal entry: ${response.status}`
-        );
+        throw new Error(`Failed to update journal entry: ${response.status}`);
     }
 
     return (await response.json()) as Journal;
@@ -82,8 +66,6 @@ export async function deleteJournalEntry(id: string): Promise<void> {
     });
 
     if (!response.ok) {
-        throw new Error(
-            `Failed to delete journal entry: ${response.status}`
-        );
+        throw new Error(`Failed to delete journal entry: ${response.status}`);
     }
 }
