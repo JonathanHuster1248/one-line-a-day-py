@@ -18,7 +18,7 @@ def init_db(db_path: str):
     return engine
 
 
-class UserSqlDb:
+class UserDb:
     def __init__(self, db_path: str):
         self.engine = init_db(db_path)
 
@@ -72,7 +72,7 @@ class UserSqlDb:
             session.commit()
 
 
-class JournalSqlDb:
+class JournalDb:
     def __init__(self, db_path: str):
         self.engine = init_db(db_path)
 
