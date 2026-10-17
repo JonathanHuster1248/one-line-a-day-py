@@ -16,6 +16,7 @@ from litestar.openapi.plugins import SwaggerRenderPlugin
 from litestar.security.session_auth import SessionAuth
 from litestar.stores.file import FileStore
 
+from .src.exceptions import exception_handlers
 from .src.settings import settings
 
 
@@ -40,6 +41,7 @@ def make_app():
             JournalController,
             UserController,
         ],
+        exception_handlers=exception_handlers,
         cors_config=CORSConfig(
             allow_origins=settings.cors_allowed_origins,
             allow_origin_regex=settings.cors_allow_origin_regex,

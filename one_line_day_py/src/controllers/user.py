@@ -3,11 +3,17 @@ from __future__ import annotations
 from typing import Optional
 from uuid import UUID
 
-from litestar import Controller, delete, get, put
+from litestar import Controller, Request, delete, get, put
+from litestar.exceptions import ClientException, PermissionDeniedException
 
 from .. import dependencies
 from ..model import UserPublic
 from ..schemas import to_public_user
+
+
+def _check_is_self(request: Request, user_id: UUID) -> None:
+    if request.user.id != user_id:
+        raise PermissionDeniedException(detail="Cannot modify another user's record")
 
 
 class UserController(Controller):
@@ -30,11 +36,16 @@ class UserController(Controller):
 
     @put("/{user_id:uuid}")
     async def update_user(
-        self, user_id: UUID, name: Optional[str] = None
+        self, request: Request, user_id: UUID, name: Optional[str] = None
     ) -> UserPublic:
+        _check_is_self(request, user_id)
+        if name is None:
+            raise ClientException(detail="No fields provided to update")
+
         user = await dependencies.users_db.update_user(user_id, name=name)
         return to_public_user(user)
 
     @delete("/{user_id:uuid}")
-    async def delete_user(self, user_id: UUID) -> None:
+    async def delete_user(self, request: Request, user_id: UUID) -> None:
+        _check_is_self(request, user_id)
         await dependencies.users_db.delete_user(user_id)
