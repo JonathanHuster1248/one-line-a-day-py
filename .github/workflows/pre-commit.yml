@@ -1,0 +1,34 @@
+name: pre-commit
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # The local pytest hook calls .venv/bin/pytest, so install into .venv
+      - name: Install backend dependencies
+        run: uv sync --locked
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      # Hooks are configured for the pre-push / pre-merge-commit stages only,
+      # so a plain `pre-commit run` would run nothing.
+      - name: Run pre-push hooks (ruff, pytest)
+        run: uv run pre-commit run --all-files --hook-stage pre-push
+
+      - name: Run pre-merge-commit hooks (vitest)
+        run: uv run pre-commit run --all-files --hook-stage pre-merge-commit
