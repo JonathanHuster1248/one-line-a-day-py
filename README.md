@@ -18,6 +18,23 @@ To run the frontend cd to ./frontend and run
 
 `npm run dev`
 
+## First-time setup (git hooks)
+
+Linting (ruff), backend tests (pytest) and frontend tests (vitest) run through [pre-commit](https://pre-commit.com) on `git push` and on merge commits. After cloning, install the dependencies the hooks use and register the hooks once:
+
+```
+python -m venv .venv
+.venv/bin/pip install -e . pre-commit pytest
+npm --prefix frontend install
+.venv/bin/pre-commit install
+```
+
+`pre-commit install` with no flags is enough: `.pre-commit-config.yaml` sets `default_install_hook_types: [pre-push, pre-merge-commit]`, so it installs the pre-push and pre-merge-commit hooks (not a pre-commit hook). To run everything manually without pushing:
+
+```
+.venv/bin/pre-commit run --all-files --hook-stage pre-push
+```
+
 ## Network access
 
 With Docker Compose:
