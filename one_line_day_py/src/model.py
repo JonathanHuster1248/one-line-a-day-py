@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from datetime import date
-from uuid import UUID, uuid4
 from pathlib import Path
+from uuid import UUID, uuid4
 
-from sqlmodel import SQLModel, Field, UniqueConstraint
+from sqlmodel import Field, SQLModel, UniqueConstraint
 
 
 class User(SQLModel, table=True):

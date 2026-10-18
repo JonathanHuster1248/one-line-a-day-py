@@ -1,12 +1,10 @@
 from datetime import date
 from uuid import UUID
 
-from ..model import JournalEntry, User
-
-from sqlmodel import create_engine, SQLModel, Session, select
 from sqlalchemy import extract
+from sqlmodel import Session, SQLModel, create_engine, select
 
-from typing import Optional
+from ..model import JournalEntry, User
 
 
 def init_db(db_path: str):
@@ -49,12 +47,12 @@ class UserDb:
             user = session.exec(statement).one()
             return user
 
-    async def get_user_by_email(self, email: str) -> Optional[User]:
+    async def get_user_by_email(self, email: str) -> User | None:
         with Session(self.engine) as session:
             statement = select(User).where(User.email == email)
             return session.exec(statement).one_or_none()
 
-    async def update_user(self, user_id: UUID, name: Optional[str] = None) -> User:
+    async def update_user(self, user_id: UUID, name: str | None = None) -> User:
         with Session(self.engine) as session:
             statement = select(User).where(User.id == user_id)
             user = session.exec(statement).one()
@@ -89,10 +87,10 @@ class JournalDb:
 
     async def list_entries(
         self,
-        author_id: Optional[UUID] = None,
-        month: Optional[int] = None,
-        day: Optional[int] = None,
-        year: Optional[int] = None,
+        author_id: UUID | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        year: int | None = None,
     ) -> list[JournalEntry]:
         with Session(self.engine) as session:
             statement = select(JournalEntry)
@@ -124,8 +122,8 @@ class JournalDb:
     async def update_entry(
         self,
         entry_id: UUID,
-        date: Optional[date] = None,
-        message: Optional[str] = None,
+        date: date | None = None,
+        message: str | None = None,
     ) -> JournalEntry:
         with Session(self.engine) as session:
             statement = select(JournalEntry).where(JournalEntry.id == entry_id)

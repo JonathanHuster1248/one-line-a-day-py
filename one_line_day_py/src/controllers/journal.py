@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Optional
 from uuid import UUID
 
 from litestar import Controller, Request, delete, get, post, put
@@ -66,8 +65,8 @@ class JournalController(Controller):
         request: Request,
         journals_db: JournalsDb,
         entry_id: UUID,
-        input_date: Optional[date] = None,
-        message: Optional[str] = None,
+        input_date: date | None = None,
+        message: str | None = None,
     ) -> JournalEntry:
         await _get_owned_entry(journals_db, entry_id, request.user.id)
         return await journals_db.update_entry(
