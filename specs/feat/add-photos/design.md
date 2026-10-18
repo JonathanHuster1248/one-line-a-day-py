@@ -165,23 +165,28 @@ class AttachmentKind(StrEnum):
     IMAGE = "image"
     PDF = "pdf"
 
+
 class Attachment(SQLModel, table=True):
     __tablename__ = "attachments"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    entry_id: UUID = Field(foreign_key="journal_entries.id", ondelete="CASCADE", index=True)
+    entry_id: UUID = Field(
+        foreign_key="journal_entries.id", ondelete="CASCADE", index=True
+    )
     author_id: UUID = Field(foreign_key="users.id", index=True)  # denormalized owner
-    filename: str            # original name, used only as display text (NFR-7)
+    filename: str  # original name, used only as display text (NFR-7)
     kind: AttachmentKind
-    content_type: str        # of the stored full-size content, e.g. image/webp
-    size_bytes: int          # of the stored full-size content
-    has_thumbnail: bool      # False for PDFs today; lets the UI skip a doomed request
-    width: int | None        # of the display copy; None for PDFs
+    content_type: str  # of the stored full-size content, e.g. image/webp
+    size_bytes: int  # of the stored full-size content
+    has_thumbnail: bool  # False for PDFs today; lets the UI skip a doomed request
+    width: int | None  # of the display copy; None for PDFs
     height: int | None
     original_content_type: str | None  # e.g. image/heic, before conversion
-    content_hash: str | None           # sha256 of the uploaded bytes
-    taken_at: datetime | None          # capture time from EXIF, if present
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))  # upload order (out of scope: user ordering)
+    content_hash: str | None  # sha256 of the uploaded bytes
+    taken_at: datetime | None  # capture time from EXIF, if present
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC)
+    )  # upload order (out of scope: user ordering)
 ```
 
 **Why these extra columns now:** there is no migration tool, and because originals are not kept (D3) some information exists only at upload time and is lost forever if we don't record it then. Adding a nullable column later is cheap in SQLite, but backfilling the data is impossible.
@@ -310,7 +315,9 @@ on_startup=[service.sweep_orphans, ...]
 
 ```python
 class EntryAttachments(Protocol):
-    async def for_entries(self, user_id: UUID, entry_ids: list[UUID]) -> AttachmentLookup: ...
+    async def for_entries(
+        self, user_id: UUID, entry_ids: list[UUID]
+    ) -> AttachmentLookup: ...
     async def remove_entry_files(self, entry_id: UUID) -> None: ...
 ```
 
