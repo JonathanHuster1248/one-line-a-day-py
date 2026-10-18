@@ -2,6 +2,20 @@
 
 All notable changes to the backend are documented here.
 
+## [0.3.1] - 2026-10-18
+
+Address lint issues and add CI tooling.
+
+### Added
+- `noxfile.py` for running lint and tests with a single command.
+- `scripts/check_version_bump.py`, run in CI to fail when backend/frontend code changes without a version bump.
+- GitHub Actions workflow (`.github/workflows/pre-commit.yml`) running the pre-commit checks on pull requests.
+- `ruff` added to the project requirements.
+
+### Changed
+- Pre-commit checks run at the pre-merge stage rather than on push.
+- Lint fixes in `controllers/journal.py`, `controllers/user.py`, `data/db.py` and `model.py` (no behavior change).
+
 ## [0.3.0] - 2026-10-17
 
 Restrict network access to localhost by default.
