@@ -20,19 +20,27 @@ To run the frontend cd to ./frontend and run
 
 ## Network access
 
-By default the app is reachable from this machine only:
+With Docker Compose:
 
-- The backend binds to `127.0.0.1` (`HOST` setting) when run directly.
-- `docker-compose.yml` publishes ports `8000` (backend) and `3000` (frontend) on `127.0.0.1` only. Inside the backend container `HOST=0.0.0.0` is required, since the container's own interface is not loopback; the host-side `127.0.0.1:` prefix is what keeps it private.
-- Swagger UI is at `/schema/swagger/` and is **unauthenticated**. Set `ENABLE_DOCS=false` to turn it off.
-- CORS (`CORS_ALLOWED_ORIGINS`/`CORS_ALLOW_ORIGIN_REGEX`) only controls which web pages a browser lets call the API; it is not access control.
+- The **frontend** is published on all interfaces (`http://<this-machine-ip>:3000`), so other devices on your network can use the app.
+- The **backend** is published on `127.0.0.1:8000` only. Other devices cannot reach it directly; the frontend's nginx proxies `/api/` to it over the compose network (`frontend/nginx.conf`), and the frontend is built with `VITE_API_BASE_URL=/api`. Because the browser only ever talks to port 3000, requests are same-origin and CORS doesn't apply. The `127.0.0.1:8000` mapping is only for debugging and can be removed.
+- Swagger UI (`/schema/swagger/`, unauthenticated) is available at `http://localhost:8000` on this machine and is blocked through the proxy. Set `ENABLE_DOCS=false` to turn it off.
+- Run directly (`python -m one_line_day_py.main`), the backend binds to `127.0.0.1` (`HOST` setting). Inside the container `HOST=0.0.0.0` is required because the container's own interface is not loopback.
+- CORS (`CORS_ALLOWED_ORIGINS`/`CORS_ALLOW_ORIGIN_REGEX`) only matters for `npm run dev`, where the frontend (`:5173`) calls the backend (`:8000`) cross-origin. It is not access control.
+
+To make the frontend local-only again, change its port mapping in `docker-compose.yml` to `"127.0.0.1:3000:80"`.
+
+Things to know when the frontend is shared on a network:
+- Signup is open, so anyone who can reach port 3000 can create an account. Restrict it if that matters.
+- Traffic is plain HTTP; passwords cross the network unencrypted. Use HTTPS (see below) or a VPN such as Tailscale for anything beyond a trusted network.
+- On WSL2 the LAN can't see the container ports without Windows port forwarding (`netsh interface portproxy`) or mirrored networking, plus a firewall rule.
 
 ### Running on a server
 
 The frontend is a single-page app, so API calls come from each visitor's browser, not from the frontend server. The backend therefore can't be locked to "the frontend's IP". The usual setup is to keep the backend private and put a reverse proxy in front:
 
-1. Put nginx/Caddy/etc. on the server with HTTPS, serving the frontend and proxying a path such as `/api` to the backend on `127.0.0.1:8000`. Keep the backend port bound to loopback (leave `127.0.0.1:8000:8000` in compose) so the proxy is the only way in.
-2. Build the frontend with `VITE_API_BASE_URL` pointing at the public URL, and set `CORS_ALLOWED_ORIGINS` to the frontend's exact origin (e.g. `["https://journal.example.com"]`). Clear or tighten `CORS_ALLOW_ORIGIN_REGEX`, since the default allows any localhost origin.
+1. Keep the compose setup above (frontend nginx proxying `/api/` to a private backend) and put HTTPS in front of port 3000 with Caddy/nginx/a cloud load balancer. Keep the backend port bound to loopback or unpublished.
+2. Leave `VITE_API_BASE_URL=/api` so the app stays same-origin and no CORS is needed. Only if you serve the API on a different origin, set `CORS_ALLOWED_ORIGINS` to the frontend's exact origin and tighten `CORS_ALLOW_ORIGIN_REGEX`, since the default allows any localhost origin.
 3. In `.env` set `DEBUG=false`, `SESSION_COOKIE_SECURE=true`, `ENABLE_DOCS=false`.
 4. Open only ports 80/443 in the firewall/security group; do not expose 8000 or 3000.
 5. To restrict who can use the site, allowlist IPs in the firewall or reverse proxy (e.g. nginx `allow`/`deny`), or put it behind a VPN/Tailscale. Signup is open to anyone who can reach the app, so consider restricting or disabling it if this is a private journal.

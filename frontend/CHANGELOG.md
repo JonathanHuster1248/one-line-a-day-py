@@ -2,6 +2,17 @@
 
 All notable changes to the frontend are documented here.
 
+## [0.2.1] - 2026-10-17
+
+Serve the API through nginx so the frontend can be shared on the local network.
+
+### Added
+- `frontend/nginx.conf`: serves the SPA (with `index.html` fallback) and proxies `/api/` to the backend over the compose network; `/api/schema` is blocked.
+
+### Changed
+- Docker build uses `VITE_API_BASE_URL=/api` (relative) so the app works from whatever address it is opened at.
+- `docker-compose.yml` publishes the frontend on all interfaces (`3000`); the backend stays on `127.0.0.1`.
+
 ## [0.2.0] - 2026-10-17
 
 Split `App.tsx` responsibilities, add frontend test suite

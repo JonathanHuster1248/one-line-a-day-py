@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: backend.Dockerfile
     ports:
+      # Debug access from this machine only; the frontend reaches it via the
+      # compose network, so this mapping could be removed entirely.
       - "127.0.0.1:8000:8000"
     env_file:
       - .env
@@ -18,8 +20,10 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:8000
+        # Relative: nginx in the frontend container proxies /api/ to the backend
+        VITE_API_BASE_URL: /api
     ports:
-      - "127.0.0.1:3000:80"
+      # Reachable from the local network; the backend is not (see README)
+      - "3000:80"
     depends_on:
       - backend

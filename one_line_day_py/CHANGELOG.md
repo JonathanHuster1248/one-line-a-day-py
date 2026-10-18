@@ -11,7 +11,7 @@ Restrict network access to localhost by default.
 - `ENABLE_DOCS` setting (default `true`); when `false`, Swagger UI and the OpenAPI schema are not served and `/` returns 404.
 
 ### Changed
-- `docker-compose.yml` publishes the backend (`8000`) and frontend (`3000`) on `127.0.0.1` only, and sets `HOST=0.0.0.0` inside the backend container so the port mapping is what limits exposure.
+- `docker-compose.yml` publishes the backend (`8000`) on `127.0.0.1` only (the frontend is reachable on the network and proxies API calls to it, see the frontend changelog), and sets `HOST=0.0.0.0` inside the backend container so the port mapping is what limits exposure.
 
 ## [0.2.1] - 2026-10-17
 
