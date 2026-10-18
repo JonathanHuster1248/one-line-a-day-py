@@ -4,9 +4,13 @@ services:
       context: .
       dockerfile: backend.Dockerfile
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     env_file:
       - .env
+    environment:
+      # Must listen on all interfaces *inside* the container; the loopback-only
+      # port mapping above is what keeps it private on the host.
+      HOST: 0.0.0.0
     volumes:
       - ./one_line_day_py/src/data/journal_entries.db:/app/one_line_day_py/src/data/journal_entries.db
 
@@ -16,6 +20,6 @@ services:
       args:
         VITE_API_BASE_URL: http://localhost:8000
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"
     depends_on:
       - backend

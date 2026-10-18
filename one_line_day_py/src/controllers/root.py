@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from litestar import Controller, get
+from litestar.exceptions import NotFoundException
 from litestar.response import File, Redirect
+
+from ..settings import settings
 
 
 class RootController(Controller):
@@ -9,6 +12,8 @@ class RootController(Controller):
 
     @get("/")
     async def entry(self) -> Redirect:
+        if not settings.enable_docs:
+            raise NotFoundException()
         return Redirect("/schema/swagger/")
 
     @get("/favicon.ico")

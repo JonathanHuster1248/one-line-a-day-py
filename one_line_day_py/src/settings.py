@@ -21,6 +21,11 @@ class CoreSettings(BaseSettings):
         r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"  # CORS_ALLOW_ORIGIN_REGEX
     )
     log_level: str = "INFO"  # LOG_LEVEL
+    # Interface uvicorn binds to. Loopback by default so only this machine can reach
+    # the API; the Docker image sets HOST=0.0.0.0 (compose limits exposure to loopback).
+    host: str = "127.0.0.1"  # HOST
+    # Serves Swagger UI and the OpenAPI schema at /schema. ENABLE_DOCS=false in prod.
+    enable_docs: bool = True  # ENABLE_DOCS
 
 
 settings = CoreSettings()

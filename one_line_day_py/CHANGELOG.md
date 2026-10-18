@@ -2,6 +2,17 @@
 
 All notable changes to the backend are documented here.
 
+## [0.3.0] - 2026-10-17
+
+Restrict network access to localhost by default.
+
+### Added
+- `HOST` setting (default `127.0.0.1`) controlling the interface uvicorn binds to, replacing the hard-coded `0.0.0.0`.
+- `ENABLE_DOCS` setting (default `true`); when `false`, Swagger UI and the OpenAPI schema are not served and `/` returns 404.
+
+### Changed
+- `docker-compose.yml` publishes the backend (`8000`) and frontend (`3000`) on `127.0.0.1` only, and sets `HOST=0.0.0.0` inside the backend container so the port mapping is what limits exposure.
+
 ## [0.2.1] - 2026-10-17
 
 Run lint/format checks on push.

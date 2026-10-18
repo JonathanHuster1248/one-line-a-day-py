@@ -67,11 +67,15 @@ def make_app():
             allow_headers=["*"],
             allow_credentials=True,
         ),
-        openapi_config=OpenAPIConfig(
-            title="One Line a Day",
-            description="Backend of one line a day application",
-            version=version("one-line-day-py"),
-            render_plugins=[SwaggerRenderPlugin()],
+        openapi_config=(
+            OpenAPIConfig(
+                title="One Line a Day",
+                description="Backend of one line a day application",
+                version=version("one-line-day-py"),
+                render_plugins=[SwaggerRenderPlugin()],
+            )
+            if settings.enable_docs
+            else None
         ),
         on_app_init=[session_auth.on_app_init],
         stores={
@@ -89,7 +93,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "one_line_day_py.main:make_app",
         factory=True,
-        host="0.0.0.0",
+        host=settings.host,
         port=8000,
         reload=True,
     )
