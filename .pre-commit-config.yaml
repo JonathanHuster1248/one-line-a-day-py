@@ -15,14 +15,21 @@ repos:
   hooks:
     - id: pytest
       name: pytest (backend)
-      entry: .venv/bin/pytest
+      entry: .venv/bin/nox -s tests
       language: system
       pass_filenames: false
       always_run: true
       stages: [pre-merge-commit]
     - id: vitest
       name: vitest (frontend)
-      entry: npm --prefix frontend run test
+      entry: .venv/bin/nox -s frontend_tests
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: [pre-merge-commit]
+    - id: version-bump
+      name: version bump (backend/frontend)
+      entry: .venv/bin/nox -s version_check
       language: system
       pass_filenames: false
       always_run: true

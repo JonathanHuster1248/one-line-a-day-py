@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # version-bump hook diffs against origin/main
 
       - uses: astral-sh/setup-uv@v5
 
@@ -18,17 +20,17 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      # The local pytest hook calls .venv/bin/pytest, so install into .venv
-      - name: Install backend dependencies
-        run: uv sync --locked
-
-      - name: Install frontend dependencies
-        run: npm --prefix frontend ci
+      # nox builds its own envs (uv) for the backend tests; install the runner only
+      - name: Install dependencies
+        run: |
+          uv sync --locked
+          npm --prefix frontend ci
 
       # Hooks are configured for the pre-push / pre-merge-commit stages only,
-      # so a plain `pre-commit run` would run nothing.
+      # so a plain `pre-commit run` would run nothing. The pre-merge-commit
+      # hooks (pytest, vitest, version-bump) all delegate to nox sessions.
       - name: Run pre-push hooks (ruff)
         run: uv run pre-commit run --all-files --hook-stage pre-push
 
-      - name: Run pre-merge-commit hooks (pytest, vitest)
+      - name: Run pre-merge-commit hooks (nox sessions)
         run: uv run pre-commit run --all-files --hook-stage pre-merge-commit
