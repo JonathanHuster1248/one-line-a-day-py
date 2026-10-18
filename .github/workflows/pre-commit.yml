@@ -27,8 +27,8 @@ jobs:
 
       # Hooks are configured for the pre-push / pre-merge-commit stages only,
       # so a plain `pre-commit run` would run nothing.
-      - name: Run pre-push hooks (ruff, pytest)
+      - name: Run pre-push hooks (ruff)
         run: uv run pre-commit run --all-files --hook-stage pre-push
 
-      - name: Run pre-merge-commit hooks (vitest)
+      - name: Run pre-merge-commit hooks (pytest, vitest)
         run: uv run pre-commit run --all-files --hook-stage pre-merge-commit
