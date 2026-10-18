@@ -7,6 +7,7 @@ One line a day
 	- Tagging People/Groups
   - Photos assigned to Journals 
   - Photos accessible via backend
+  - Complete user deletion: deleting a user should also delete their journal entries and attachments (rows and files on disk)
 - FE 
   - Display photos with each journal
   - Allow sharing with other products? Reddit, twitter, tumblr, etc.
