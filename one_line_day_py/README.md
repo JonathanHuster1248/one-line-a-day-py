@@ -29,20 +29,6 @@ uv run ruff check --fix && uv run ruff format
 
 Tests use a fresh temporary SQLite database per test (see `tests/test_src/conftest.py`).
 
-## Layout
-
-| Path | Purpose |
-| --- | --- |
-| `main.py` | App factory (`make_app`), session auth, CORS, logging, uvicorn entrypoint |
-| `src/controllers/` | `AuthController` (`/auth`), `UserController` (`/users`), `JournalController` (`/journals`), `RootController` (`/`, `/ping`) |
-| `src/model.py` | SQLModel tables: `User`, `JournalEntry` (unique per author + date), `Photo` (not yet wired up) |
-| `src/data/db.py` | `UserDb` / `JournalDb` data layer |
-| `src/schemas.py` | Request payloads and the public-user mapper (strips password hash) |
-| `src/security.py` | argon2 hash/verify |
-| `src/settings.py` | Environment-driven settings |
-| `src/logging_config.py` | Console + rotating file logs; access logs never include bodies, headers, or cookies |
-| `tests/` | pytest suite |
-
 ## Key behaviours
 
 - Auth is session-cookie based. Journal routes are always scoped to the logged-in user; accessing another user's entry returns 404.
