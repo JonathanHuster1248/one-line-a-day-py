@@ -1,5 +1,4 @@
 from importlib.metadata import version
-from pathlib import Path
 
 import uvicorn
 from litestar import Litestar
@@ -80,7 +79,7 @@ def make_app():
         on_app_init=[session_auth.on_app_init],
         stores={
             "sessions": FileStore(
-                Path(settings.db_path).parent / ".sessions", create_directories=True
+                settings.db_path.parent / ".sessions", create_directories=True
             )
         },
         logging_config=create_logging_config(),

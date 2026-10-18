@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import extract
@@ -7,7 +8,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from ..model import JournalEntry, User
 
 
-def init_db(db_path: str):
+def init_db(db_path: Path):
     engine = create_engine(
         f"sqlite:///{db_path}",
         echo=False,
@@ -18,7 +19,7 @@ def init_db(db_path: str):
 
 
 class UserDb:
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: Path):
         self.engine = init_db(db_path)
 
     async def add_user(self, user: User) -> User:
@@ -74,7 +75,7 @@ class UserDb:
 
 
 class JournalDb:
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: Path):
         self.engine = init_db(db_path)
 
     async def add_entry(self, entry: JournalEntry) -> JournalEntry:

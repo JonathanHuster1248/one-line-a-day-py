@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Protocol
 from uuid import UUID
 
@@ -5,7 +6,7 @@ from ..model import JournalEntry
 
 
 class JournalDatabase(Protocol):
-    def __init__(self, db_path: str): ...
+    def __init__(self, db_path: Path): ...
 
     async def insert(self, data: JournalEntry) -> JournalEntry: ...
 

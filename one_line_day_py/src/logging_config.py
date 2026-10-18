@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from litestar.logging import LoggingConfig
 from litestar.middleware.logging import LoggingMiddlewareConfig
 
@@ -15,7 +13,7 @@ logging_middleware_config = LoggingMiddlewareConfig(
 
 
 def create_logging_config() -> LoggingConfig:
-    log_dir = Path(settings.db_path).parent / ".logs"
+    log_dir = settings.db_path.parent / ".logs"
     log_dir.mkdir(parents=True, exist_ok=True)
 
     return LoggingConfig(
