@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 from uuid import UUID
 
 from litestar import Controller, Request, delete, get, put
@@ -43,7 +42,7 @@ class UserController(Controller):
         request: Request,
         users_db: UsersDb,
         user_id: UUID,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> UserPublic:
         _check_is_self(request, user_id)
         if name is None:

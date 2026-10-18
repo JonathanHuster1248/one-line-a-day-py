@@ -2,6 +2,14 @@
 
 All notable changes to the frontend are documented here.
 
+## [0.2.2] - 2026-10-18
+
+Tooling and docs.
+
+### Added
+- `frontend/.nvmrc` pinning the Node version for consistent local and CI builds.
+- Frontend README with setup and usage instructions.
+
 ## [0.2.1] - 2026-10-17
 
 Serve the API through nginx so the frontend can be shared on the local network.
