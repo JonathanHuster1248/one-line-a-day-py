@@ -1,53 +1,74 @@
-This is a pet project by Jonathan Huster to make a digital one line a day journal book like the [5 year journal](https://www.amazon.com/One-Line-Day-Five-Year-Memory/dp/0811870197). 
+# One Line a Day
 
-To run the main API call 
+A pet project by Jonathan Huster: a digital version of the [5 year journal](https://www.amazon.com/One-Line-Day-Five-Year-Memory/dp/0811870197). Write one line per day, and see what you wrote on the same day in previous years.
+
+## Overview
 
 ```
-python -m one_line_day_py.main
+ Browser ──► nginx + React SPA (:3000) ──/api/──► Litestar API (:8000) ──► SQLite
+              frontend/                            one_line_day_py/         journal_entries.db
 ```
 
-A Docker implementation also exists, with separate images for the backend (`backend.Dockerfile`) and frontend (`frontend/Dockerfile`). Use Docker Compose to build and run both together:
+- **Frontend** (`frontend/`): a React + TypeScript single-page app. Log in, pick a date, and see every entry written on that month/day across all years. Add, edit, and delete entries inline.
+- **Backend** (`one_line_day_py/`): a Litestar (Python) REST API backed by SQLite via SQLModel. Handles signup/login with session cookies and argon2-hashed passwords. Every journal entry is private to its author.
+- **Deployment**: Docker Compose runs both. The frontend's nginx serves the built app and proxies `/api/` to the backend, so the browser only ever talks to one origin.
+
+See the component READMEs for details:
+
+- [Backend README](one_line_day_py/README.md)
+- [Frontend README](frontend/README.md)
+
+## How to run
+
+Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```
 docker compose up --build
 ```
 
-This serves the backend at `http://127.0.0.1:8000` and the frontend at `http://127.0.0.1:3000`, and bind-mounts `one_line_day_py/src/data/journal_entries.db` into the backend container so the database persists on the host.
+- App: <http://localhost:3000>
+- API (debugging only, bound to this machine): <http://localhost:8000>
+- Swagger UI: <http://localhost:8000/schema/swagger/>
 
-To run the frontend cd to ./frontend and run 
+The SQLite file `one_line_day_py/src/data/journal_entries.db` is bind-mounted into the backend container, so your data persists on the host.
 
-`npm run dev`
+Configuration is via environment variables in a `.env` file; copy `example.env` to start.
 
-## First-time setup (git hooks)
+## Contributing
 
-Linting (ruff), backend tests (pytest) and frontend tests (vitest) run through [pre-commit](https://pre-commit.com) on `git push` and on merge commits. After cloning, install the dependencies the hooks use and register the hooks once:
+1. Branch from `main` and open a pull request (squash merge preferred).
+2. Install [uv](https://docs.astral.sh/uv/) and the tooling and register the git hooks once after cloning:
 
-```
-python -m venv .venv
-.venv/bin/pip install -e . pre-commit pytest
-npm --prefix frontend install
-.venv/bin/pre-commit install
-```
+   ```
+   uv sync
+   npm --prefix frontend install
+   uv run pre-commit install
+   ```
 
-`pre-commit install` with no flags is enough: `.pre-commit-config.yaml` sets `default_install_hook_types: [pre-push, pre-merge-commit]`, so it installs the pre-push and pre-merge-commit hooks (not a pre-commit hook). To run everything manually without pushing:
+   Hooks run on `git push` and merge commits: `ruff` lint/format, backend `pytest`, and frontend `vitest`. To run them manually:
 
-```
-.venv/bin/pre-commit run --all-files --hook-stage pre-push
-```
+   ```
+   uv run pre-commit run --all-files --hook-stage pre-push
+   ```
+
+3. Add tests alongside your change (`one_line_day_py/tests/` for the backend, `*.test.ts(x)` next to the module for the frontend).
+4. See [`TODO.md`](TODO.md) for the backlog.
+
+Running the pieces without Docker (for development) is covered in the backend and frontend READMEs.
 
 ## Network access
 
 With Docker Compose:
 
 - The **frontend** is published on all interfaces (`http://<this-machine-ip>:3000`), so other devices on your network can use the app.
-- The **backend** is published on `127.0.0.1:8000` only. Other devices cannot reach it directly; the frontend's nginx proxies `/api/` to it over the compose network (`frontend/nginx.conf`), and the frontend is built with `VITE_API_BASE_URL=/api`. Because the browser only ever talks to port 3000, requests are same-origin and CORS doesn't apply. The `127.0.0.1:8000` mapping is only for debugging and can be removed.
+- The **backend** is published on `127.0.0.1:8000` only. The frontend's nginx proxies `/api/` to it over the compose network (`frontend/nginx.conf`), and the frontend is built with `VITE_API_BASE_URL=/api`. Because the browser only talks to port 3000, requests are same-origin and CORS doesn't apply. The `127.0.0.1:8000` mapping is only for debugging and can be removed.
 - Swagger UI (`/schema/swagger/`, unauthenticated) is available at `http://localhost:8000` on this machine and is blocked through the proxy. Set `ENABLE_DOCS=false` to turn it off.
-- Run directly (`python -m one_line_day_py.main`), the backend binds to `127.0.0.1` (`HOST` setting). Inside the container `HOST=0.0.0.0` is required because the container's own interface is not loopback.
 - CORS (`CORS_ALLOWED_ORIGINS`/`CORS_ALLOW_ORIGIN_REGEX`) only matters for `npm run dev`, where the frontend (`:5173`) calls the backend (`:8000`) cross-origin. It is not access control.
 
 To make the frontend local-only again, change its port mapping in `docker-compose.yml` to `"127.0.0.1:3000:80"`.
 
 Things to know when the frontend is shared on a network:
+
 - Signup is open, so anyone who can reach port 3000 can create an account. Restrict it if that matters.
 - Traffic is plain HTTP; passwords cross the network unencrypted. Use HTTPS (see below) or a VPN such as Tailscale for anything beyond a trusted network.
 - On WSL2 the LAN can't see the container ports without Windows port forwarding (`netsh interface portproxy`) or mirrored networking, plus a firewall rule.
