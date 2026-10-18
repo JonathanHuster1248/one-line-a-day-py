@@ -25,3 +25,22 @@ class TestRootController:
         response = client.get("/ping")
 
         assert response.status_code != 401
+
+
+class TestDocsDisabled:
+    def test_schema_and_root_are_not_served_when_docs_disabled(
+        self, tmp_path, monkeypatch
+    ):
+        from litestar.testing import TestClient
+
+        from one_line_day_py.main import make_app
+        from one_line_day_py.src.settings import settings
+
+        monkeypatch.setattr(settings, "db_path", str(tmp_path / "test.db"))
+        monkeypatch.setattr(settings, "enable_docs", False)
+
+        with TestClient(app=make_app()) as c:
+            assert c.get("/schema/swagger/").status_code == 404
+            assert c.get("/schema/openapi.json").status_code == 404
+            assert c.get("/", follow_redirects=False).status_code == 404
+            assert c.get("/ping").status_code == 200

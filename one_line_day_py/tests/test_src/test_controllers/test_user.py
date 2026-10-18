@@ -117,12 +117,12 @@ class TestUserController:
             alice_id = alice_client.post("/auth/signup", json=alice).json()["id"]
             bob_client.post("/auth/signup", json=bob)
 
-            response = bob_client.put(
-                f"/users/{alice_id}", params={"name": "Hijacked"}
-            )
+            response = bob_client.put(f"/users/{alice_id}", params={"name": "Hijacked"})
 
             assert response.status_code == 403
-            assert alice_client.get(f"/users/{alice_id}").json()["name"] == alice["name"]
+            assert (
+                alice_client.get(f"/users/{alice_id}").json()["name"] == alice["name"]
+            )
 
     def test_delete_user_as_non_owner_is_forbidden(self, app, alice, bob):
         with TestClient(app=app) as alice_client, TestClient(app=app) as bob_client:

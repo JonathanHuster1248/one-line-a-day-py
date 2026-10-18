@@ -2,6 +2,28 @@
 
 All notable changes to the backend are documented here.
 
+## [0.3.0] - 2026-10-17
+
+Restrict network access to localhost by default.
+
+### Added
+- `HOST` setting (default `127.0.0.1`) controlling the interface uvicorn binds to, replacing the hard-coded `0.0.0.0`.
+- `ENABLE_DOCS` setting (default `true`); when `false`, Swagger UI and the OpenAPI schema are not served and `/` returns 404.
+
+### Changed
+- `docker-compose.yml` publishes the backend (`8000`) on `127.0.0.1` only (the frontend is reachable on the network and proxies API calls to it, see the frontend changelog), and sets `HOST=0.0.0.0` inside the backend container so the port mapping is what limits exposure.
+
+## [0.2.1] - 2026-10-17
+
+Run lint/format checks on push.
+
+### Changed
+- `.pre-commit-config.yaml` now installs and runs the ruff hooks at the `pre-push` stage instead of on commit (`default_install_hook_types`/`default_stages`).
+
+### Added
+- Backend unit tests (`pytest`) now run as a `pre-push` hook via a local `pre-commit` hook.
+- Frontend tests (`vitest`) run as a `pre-merge-commit` hook.
+
 ## [0.2.0] - 2026-10-17
 
 Backend cleanup: session-based auth, controller split, dependency injection, logging.
