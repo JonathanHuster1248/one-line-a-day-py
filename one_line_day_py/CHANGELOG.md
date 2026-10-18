@@ -2,6 +2,13 @@
 
 All notable changes to the backend are documented here.
 
+## [0.2.1] - 2026-10-17
+
+Run lint/format checks on push.
+
+### Changed
+- `.pre-commit-config.yaml` now installs and runs the ruff hooks at the `pre-push` stage instead of on commit (`default_install_hook_types`/`default_stages`).
+
 ## [0.2.0] - 2026-10-17
 
 Backend cleanup: session-based auth, controller split, dependency injection, logging.

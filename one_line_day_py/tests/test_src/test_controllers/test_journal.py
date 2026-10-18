@@ -10,9 +10,7 @@ class TestJournalController:
             alice_client.post("/auth/signup", json=alice)
             bob_client.post("/auth/signup", json=bob)
 
-            create_response = alice_client.post(
-                "/journals/?date=2026-01-01&message=hi"
-            )
+            create_response = alice_client.post("/journals/?date=2026-01-01&message=hi")
             assert create_response.status_code == 201
             entry_id = create_response.json()["id"]
 
