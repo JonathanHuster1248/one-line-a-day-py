@@ -9,6 +9,10 @@ Run lint/format checks on push.
 ### Changed
 - `.pre-commit-config.yaml` now installs and runs the ruff hooks at the `pre-push` stage instead of on commit (`default_install_hook_types`/`default_stages`).
 
+### Added
+- Backend unit tests (`pytest`) now run as a `pre-push` hook via a local `pre-commit` hook.
+- Frontend tests (`vitest`) run as a `pre-merge-commit` hook.
+
 ## [0.2.0] - 2026-10-17
 
 Backend cleanup: session-based auth, controller split, dependency injection, logging.

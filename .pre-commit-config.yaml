@@ -1,4 +1,4 @@
-default_install_hook_types: [pre-push]
+default_install_hook_types: [pre-push, pre-merge-commit]
 default_stages: [pre-push]
 
 repos:
@@ -11,3 +11,19 @@ repos:
       args: [ --fix ]
     # Run the formatter.
     - id: ruff-format
+- repo: local
+  hooks:
+    - id: pytest
+      name: pytest (backend)
+      entry: .venv/bin/pytest
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: [pre-push]
+    - id: vitest
+      name: vitest (frontend)
+      entry: npm --prefix frontend run test
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: [pre-merge-commit]
