@@ -19,8 +19,8 @@ Short checks to confirm assumptions the design flagged as "to confirm", before b
 
 ## Phase 1: Data foundation
 
-- [ ] **T1.1 Foreign key enforcement.** Add the SQLAlchemy `connect` listener running `PRAGMA foreign_keys=ON` in `init_db`. Add a test asserting the pragma is on for new connections. [FR-13] *Done when:* the full existing suite passes (it did in the scratch experiment) and the new test passes.
-- [ ] **T1.2 `Attachment` model.** Replace `Photo` in `model.py` with `AttachmentKind` and `Attachment` as designed (including `ondelete="CASCADE"`, `author_id`, `has_thumbnail`, `width`/`height`, `original_content_type`, `content_hash`, `taken_at`, default `created_at`). Add `AttachmentPublic`. Make sure the unused `Photo` is removed everywhere. [FR-11] *Done when:* the table is created on startup, and a test confirms deleting a `JournalEntry` row cascades to its attachment rows.
+- [x] **T1.1 Foreign key enforcement.** *(Full suite passes with FKs on; tests in `tests/test_src/test_db.py`.)* Add the SQLAlchemy `connect` listener running `PRAGMA foreign_keys=ON` in `init_db`. Add a test asserting the pragma is on for new connections. [FR-13] *Done when:* the full existing suite passes (it did in the scratch experiment) and the new test passes.
+- [x] **T1.2 `Attachment` model.** *(`Photo` was only referenced in `model.py`; removed. Cascade test is in `test_db.py`.)* Replace `Photo` in `model.py` with `AttachmentKind` and `Attachment` as designed (including `ondelete="CASCADE"`, `author_id`, `has_thumbnail`, `width`/`height`, `original_content_type`, `content_hash`, `taken_at`, default `created_at`). Add `AttachmentPublic`. Make sure the unused `Photo` is removed everywhere. [FR-11] *Done when:* the table is created on startup, and a test confirms deleting a `JournalEntry` row cascades to its attachment rows.
 
 ## Phase 2: Backend building blocks (no HTTP yet)
 

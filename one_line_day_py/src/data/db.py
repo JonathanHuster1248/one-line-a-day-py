@@ -2,7 +2,7 @@ from datetime import date
 from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import extract
+from sqlalchemy import event, extract
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from ..model import JournalEntry, User
@@ -14,6 +14,14 @@ def init_db(db_path: Path):
         echo=False,
         connect_args={"check_same_thread": False},
     )
+
+    @event.listens_for(engine, "connect")
+    def _enable_foreign_keys(dbapi_connection, _connection_record):
+        # SQLite ignores foreign keys (and ON DELETE CASCADE) unless enabled per connection.
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
     SQLModel.metadata.create_all(engine)
     return engine
 
