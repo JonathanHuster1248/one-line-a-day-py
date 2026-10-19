@@ -16,6 +16,7 @@ class Variant(StrEnum):
     DISPLAY = "display"
     PDF = "pdf"
 
+
 _SUFFIXES = {
     Variant.THUMB: "thumb.webp",
     Variant.DISPLAY: "display.webp",
@@ -70,7 +71,7 @@ class AttachmentStorage:
             self._file(entry_id, attachment_id, variant).unlink(missing_ok=True)
         try:
             # If this was the only attachment, delete the orphaned directory. If there are other attachments, it will error and stay
-            self._entry_dir(entry_id).rmdir()  
+            self._entry_dir(entry_id).rmdir()
         except OSError:
             pass
 
