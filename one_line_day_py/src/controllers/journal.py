@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import NamedTuple, Protocol
 from uuid import UUID
 
 from litestar import Controller, Request, delete, get, post, put
@@ -9,9 +10,24 @@ from litestar.exceptions import NotFoundException
 from litestar.params import FromQuery
 
 from ..data.db import JournalDb
-from ..model import JournalEntry
+from ..model import AttachmentPublic, JournalEntry
 
 JournalsDb = NamedDependency[JournalDb]
+
+
+class AttachmentLookup(NamedTuple):
+    by_entry: dict[UUID, list[AttachmentPublic]]
+    available: bool
+
+
+class EntryAttachments(Protocol):
+    """All the journal side needs from attachments; implemented by a never-raising adapter."""
+
+    async def for_entries(
+        self, user_id: UUID, entry_ids: list[UUID]
+    ) -> AttachmentLookup: ...
+
+    async def remove_entry_files(self, entry_id: UUID) -> None: ...
 
 
 async def _get_owned_entry(

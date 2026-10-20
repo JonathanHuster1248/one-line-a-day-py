@@ -3,9 +3,12 @@ from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import event, extract
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, col, create_engine, func, select
 
-from ..model import JournalEntry, User
+from ..exceptions import AttachmentLimitExceeded
+from ..model import Attachment, JournalEntry, User
+
+MAX_ATTACHMENTS_PER_ENTRY = 5  # keep in sync with frontend/src/config.ts
 
 
 def init_db(db_path: Path):
@@ -154,3 +157,88 @@ class JournalDb:
             entry = session.exec(statement).one()
             session.delete(entry)
             session.commit()
+
+
+class AttachmentDb:
+    """Attachment metadata rows. Used only by `AttachmentService`, never by a controller."""
+
+    def __init__(self, db_path: Path):
+        self.engine = init_db(db_path)
+
+    async def add_attachment(self, attachment: Attachment) -> Attachment:
+        """Count check and insert share one session; raises AttachmentLimitExceeded."""
+        with Session(self.engine) as session:
+            count = session.exec(
+                select(func.count())
+                .select_from(Attachment)
+                .where(Attachment.entry_id == attachment.entry_id)
+            ).one()
+            if count >= MAX_ATTACHMENTS_PER_ENTRY:
+                raise AttachmentLimitExceeded()
+            session.add(attachment)
+            session.commit()
+            session.refresh(attachment)
+            return attachment
+
+    async def get_scoped(
+        self, attachment_id: UUID, entry_id: UUID, author_id: UUID
+    ) -> Attachment | None:
+        """The one place that decides whether a user may touch an attachment."""
+        with Session(self.engine) as session:
+            statement = select(Attachment).where(
+                Attachment.id == attachment_id,
+                Attachment.entry_id == entry_id,
+                Attachment.author_id == author_id,
+            )
+            return session.exec(statement).one_or_none()
+
+    async def list_for_entry(self, entry_id: UUID, author_id: UUID) -> list[Attachment]:
+        return (await self.list_for_entries([entry_id], author_id))[entry_id]
+
+    async def list_for_entries(
+        self, entry_ids: list[UUID], author_id: UUID
+    ) -> dict[UUID, list[Attachment]]:
+        """Every requested entry id is a key, with an empty list when it has none."""
+        by_entry: dict[UUID, list[Attachment]] = {
+            entry_id: [] for entry_id in entry_ids
+        }
+        if not entry_ids:
+            return by_entry
+        with Session(self.engine) as session:
+            statement = (
+                select(Attachment)
+                .where(
+                    col(Attachment.entry_id).in_(entry_ids),
+                    Attachment.author_id == author_id,
+                )
+                .order_by(col(Attachment.created_at))
+            )
+            for attachment in session.exec(statement):
+                by_entry[attachment.entry_id].append(attachment)
+        return by_entry
+
+    async def delete(self, attachment_id: UUID) -> None:
+        with Session(self.engine) as session:
+            attachment = session.exec(
+                select(Attachment).where(Attachment.id == attachment_id)
+            ).one()
+            session.delete(attachment)
+            session.commit()
+
+    async def count_for_entry(self, entry_id: UUID) -> int:
+        with Session(self.engine) as session:
+            return session.exec(
+                select(func.count())
+                .select_from(Attachment)
+                .where(Attachment.entry_id == entry_id)
+            ).one()
+
+    async def existing_entry_ids(self, entry_ids: list[UUID]) -> set[UUID]:
+        """Which of the given ids are still journal entries (for the orphan sweep)."""
+        if not entry_ids:
+            return set()
+        with Session(self.engine) as session:
+            statement = select(JournalEntry.id).where(
+                col(JournalEntry.id).in_(entry_ids)
+            )
+            return set(session.exec(statement))

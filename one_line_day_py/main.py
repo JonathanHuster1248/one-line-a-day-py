@@ -19,8 +19,12 @@ from .src.controllers import (
     retrieve_user_handler,
 )
 from .src.dependencies import (
+    GuardedEntryAttachments,
+    create_attachment_service,
     create_journals_db,
     create_users_db,
+    provide_attachment_service,
+    provide_entry_attachments,
     provide_journals_db,
     provide_users_db,
 )
@@ -44,6 +48,9 @@ def make_app():
         ],
     )
 
+    journals_db = create_journals_db()
+    attachment_service = create_attachment_service(journals_db)
+
     return Litestar(
         route_handlers=[
             AuthController,
@@ -54,10 +61,22 @@ def make_app():
         dependencies={
             "users_db": Provide(provide_users_db, sync_to_thread=False),
             "journals_db": Provide(provide_journals_db, sync_to_thread=False),
+            "attachment_service": Provide(
+                provide_attachment_service, sync_to_thread=False
+            ),
+            "entry_attachments": Provide(
+                provide_entry_attachments, sync_to_thread=False
+            ),
         },
         state=State(
-            {"users_db": create_users_db(), "journals_db": create_journals_db()}
+            {
+                "users_db": create_users_db(),
+                "journals_db": journals_db,
+                "attachment_service": attachment_service,
+                "entry_attachments": GuardedEntryAttachments(attachment_service),
+            }
         ),
+        on_startup=[attachment_service.sweep_orphans],
         exception_handlers=exception_handlers,
         cors_config=CORSConfig(
             allow_origins=settings.cors_allowed_origins,
