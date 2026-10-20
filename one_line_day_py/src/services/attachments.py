@@ -60,6 +60,11 @@ class AttachmentService:
         self.storage = storage
         self.journals_db = journals_db
 
+    async def _check_owned_entry(self, user_id: UUID, entry_id: UUID) -> None:
+        entry = await self.journals_db.get_entry(entry_id)  # NoResultFound -> 404
+        if entry.author_id != user_id:
+            raise NoResultFound()
+
     async def add(
         self,
         user_id: UUID,
@@ -68,9 +73,7 @@ class AttachmentService:
         content_type: str | None,
         data: bytes,
     ) -> AttachmentPublic:
-        entry = await self.journals_db.get_entry(entry_id)  # NoResultFound -> 404
-        if entry.author_id != user_id:
-            raise NoResultFound()
+        await self._check_owned_entry(user_id, entry_id)
 
         if len(data) > MAX_FILE_BYTES:
             raise AttachmentTooLarge()
@@ -147,6 +150,9 @@ class AttachmentService:
     async def list_for_entry(
         self, user_id: UUID, entry_id: UUID
     ) -> list[AttachmentPublic]:
+        # 404 for someone else's entry, like every other attachment route,
+        # rather than an empty list.
+        await self._check_owned_entry(user_id, entry_id)
         rows = await self.attachments_db.list_for_entry(entry_id, user_id)
         return [AttachmentPublic.model_validate(row) for row in rows]
 

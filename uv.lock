@@ -724,7 +724,7 @@ wheels = [
 
 [[package]]
 name = "one-line-day-py"
-version = "0.3.1"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "argon2-cffi" },

@@ -1,6 +1,6 @@
 # Photos: Design
 
-> Status: **Draft for review.** Implements `requirements.md` (FR-x / NFR-x references below point there). No code has been written yet.
+> Status: **Implemented** on `feat/add-photos` (backend 0.4.0, frontend 0.3.0). Implements `requirements.md` (FR-x / NFR-x references below point there). Where the implementation refined a detail, the notes in `tasks.md` record it.
 
 ## Summary
 

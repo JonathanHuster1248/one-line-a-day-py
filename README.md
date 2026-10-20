@@ -9,8 +9,8 @@ A pet project by Jonathan Huster: a digital version of the [5 year journal](http
               frontend/                            one_line_day_py/         journal_entries.db
 ```
 
-- **Frontend** (`frontend/`): a React + TypeScript single-page app. Log in, pick a date, and see every entry written on that month/day across all years. Add, edit, and delete entries inline.
-- **Backend** (`one_line_day_py/`): a Litestar (Python) REST API backed by SQLite via SQLModel. Handles signup/login with session cookies and argon2-hashed passwords. Every journal entry is private to its author.
+- **Frontend** (`frontend/`): a React + TypeScript single-page app. Log in, pick a date, and see every entry written on that month/day across all years. Add, edit, and delete entries inline, and attach up to 5 photos or PDFs to each one.
+- **Backend** (`one_line_day_py/`): a Litestar (Python) REST API backed by SQLite via SQLModel. Handles signup/login with session cookies and argon2-hashed passwords. Every journal entry and attachment is private to its author. Uploaded files are stored on disk (`ATTACHMENTS_PATH`), with thumbnails and display copies generated at upload.
 - **Deployment**: Docker Compose runs both. The frontend's nginx serves the built app and proxies `/api/` to the backend, so the browser only ever talks to one origin.
 
 See the component READMEs for details:

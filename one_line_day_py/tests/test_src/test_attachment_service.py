@@ -146,6 +146,8 @@ def test_list_for_entry_and_entries(env: Env) -> None:
     service, alice, bob, entry = env.service, env.alice, env.bob, env.entry
     added = run(service.add(alice.id, entry.id, "a.png", "image/png", png()))
     assert [a.id for a in run(service.list_for_entry(alice.id, entry.id))] == [added.id]
+    with pytest.raises(NoResultFound):
+        run(service.list_for_entry(bob.id, entry.id))
     assert run(service.list_for_entries(bob.id, [entry.id])) == {entry.id: []}
     assert run(service.list_for_entries(alice.id, [])) == {}
 

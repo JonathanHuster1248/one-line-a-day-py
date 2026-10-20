@@ -1,7 +1,9 @@
 import ast
+import asyncio
 import inspect
 import io
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from litestar import Litestar
@@ -87,8 +89,10 @@ def test_delete_entry_cascades_rows_and_removes_directory(
 
     assert response.status_code == 204
     assert not entry_dir(app, entry_id).exists()
+    attachments_db = app.state.attachment_service.attachments_db
+    assert asyncio.run(attachments_db.count_for_entry(UUID(entry_id))) == 0
     base = f"/journals/{entry_id}/attachments"
-    assert alice_client.get(f"{base}/").json() == []
+    assert alice_client.get(f"{base}/").status_code == 404
     assert alice_client.get(f"{base}/{attachment['id']}/content").status_code == 404
 
 

@@ -2,6 +2,30 @@
 
 All notable changes to the backend are documented here.
 
+## [0.4.0] - 2026-10-19
+
+Photo and PDF attachments on journal entries.
+
+### Added
+- `AttachmentController` at `/journals/{entry_id}/attachments`: upload (multipart, 16 MB request limit), list, thumbnail, content (with `?download=true`) and delete. Every route is scoped to the caller and the entry, with `404` otherwise. File responses are cached `private, immutable` and sent with `nosniff`.
+- `AttachmentService` (`src/services/attachments.py`): 5 per entry, 15 MB per file, image/PDF type rule, rollback that leaves no files behind when an upload fails, and a startup sweep of orphaned directories.
+- `src/images.py`: 320×320 WebP thumbnails and ≤2048 px WebP display copies, with EXIF orientation, HEIC support (`pillow-heif`) and first-frame GIFs.
+- `AttachmentStorage` (`src/data/attachment_storage.py`) and `AttachmentDb` (`src/data/db.py`).
+- `Attachment` / `AttachmentPublic` models, with `ON DELETE CASCADE` from journal entries.
+- `ATTACHMENTS_PATH` setting (default `one_line_day_py/src/data/attachments`, independent of `DB_PATH`).
+- Domain exceptions mapped to `400`/`413`/`415`/`422`/`503`.
+- Dependencies: `pillow`, `pillow-heif`.
+
+### Changed
+- Journal responses are `JournalEntryPublic`, adding `attachments` and `attachments_available`. Adding fields is backwards compatible. If the attachment lookup fails, entries still return `200` with `attachments_available: false`.
+- Deleting an entry also removes its attachment files.
+- SQLite foreign keys are enabled on every connection.
+- `docker-compose.yml` bind-mounts the attachments directory, which is also excluded from the Docker build context.
+- The `PIL`/`pillow_heif` loggers are held at `WARNING`, so `LOG_LEVEL=DEBUG` can't write EXIF values to the logs.
+
+### Removed
+- The unused placeholder `Photo` model.
+
 ## [0.3.1] - 2026-10-18
 
 Address lint issues and add CI tooling.

@@ -275,7 +275,7 @@ class TestAccess:
         base = f"/journals/{entry_id}/attachments"
 
         assert upload(bob_client, entry_id).status_code == 404
-        assert bob_client.get(f"{base}/").json() == []
+        assert bob_client.get(f"{base}/").status_code == 404
         assert bob_client.get(f"{base}/{attachment_id}/thumbnail").status_code == 404
         assert bob_client.get(f"{base}/{attachment_id}/content").status_code == 404
         assert bob_client.delete(f"{base}/{attachment_id}").status_code == 404

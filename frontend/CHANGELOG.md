@@ -2,6 +2,21 @@
 
 All notable changes to the frontend are documented here.
 
+## [0.3.0] - 2026-10-19
+
+Photo and PDF attachments on journal entries.
+
+### Added
+- Attachments when creating an entry: `AttachmentPicker` with browse, drag and drop, previews, client-side checks against the 5-file and 15 MB limits, and per-file upload status. The entry is saved first, then files upload one at a time, and failures are listed in `UploadFailureNotice` with Retry and Dismiss.
+- Attachments when editing an entry: remove existing ones and add new ones (the cap counts both). Text changes save even if an attachment change fails.
+- `AttachmentFooter` with lazy `AttachmentThumb` tiles (skeleton, in-place error with Retry, PDF icon) and an `AttachmentViewer` dialog with Download. An error boundary falls back to "Attachments unavailable".
+- `src/attachments.ts` API client, `Attachment` type, and the attachment limits in `src/config.ts`.
+
+### Changed
+- `Journal` gains `attachments` and `attachments_available`.
+- The new-entry text input and Send button sit in `.new-entry-row`, so their styles no longer apply to the picker.
+- `nginx.conf` allows 16 MB request bodies on `/api/` (the default is 1 MB).
+
 ## [0.2.2] - 2026-10-18
 
 Tooling and docs.
