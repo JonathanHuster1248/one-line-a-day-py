@@ -110,12 +110,18 @@ body {
 
 .new-entry-form {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.new-entry-row {
+    display: flex;
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
 }
 
-.new-entry-form input {
+.new-entry-row input {
     padding: 0.6rem 1rem;
     font-size: 1rem;
     font-family: inherit;
@@ -127,18 +133,18 @@ body {
     min-width: 0;
 }
 
-.new-entry-form input:focus {
+.new-entry-row input:focus {
     outline: none;
     border-color: #2e5e3a;
     box-shadow: 0 0 5px rgba(34, 139, 34, 0.5);
 }
 
-.new-entry-form input:disabled {
+.new-entry-row input:disabled {
     background-color: #f0f0ea;
     color: #999;
 }
 
-.new-entry-form button {
+.new-entry-row button {
     padding: 0.6rem 1.1rem;
     font-size: 1rem;
     font-family: inherit;
@@ -150,11 +156,11 @@ body {
     white-space: nowrap;
 }
 
-.new-entry-form button:hover:not(:disabled) {
+.new-entry-row button:hover:not(:disabled) {
     background-color: #d9ead9;
 }
 
-.new-entry-form button:disabled {
+.new-entry-row button:disabled {
     color: #999;
     border-color: #a9c8ac;
     cursor: not-allowed;
@@ -609,4 +615,10 @@ body {
 
 .upload-failure-name {
     font-weight: bold;
+}
+
+/* Inside an edit-mode box, which centers its children. */
+.box .attachment-picker,
+.box .edit-attachments {
+    margin-top: 0.5rem;
 }

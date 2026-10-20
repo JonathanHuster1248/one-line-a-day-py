@@ -130,6 +130,24 @@ describe("uploadAttachments", () => {
         ]);
     });
 
+    it("reports each file's status as it goes", async () => {
+        const a = makeFile("a");
+        const b = makeFile("b");
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse(makeAttachment({ id: "a" })))
+            .mockResolvedValueOnce(new Response(null, { status: 415 }));
+        const onStatus = vi.fn();
+
+        await uploadAttachments("entry-1", [a, b], onStatus);
+
+        expect(onStatus.mock.calls).toEqual([
+            [a, "uploading"],
+            [a, "done"],
+            [b, "uploading"],
+            [b, "failed"],
+        ]);
+    });
+
     it("returns empty results for no files without calling fetch", async () => {
         await expect(uploadAttachments("entry-1", [])).resolves.toEqual({ uploaded: [], failed: [] });
         expect(fetchMock).not.toHaveBeenCalled();

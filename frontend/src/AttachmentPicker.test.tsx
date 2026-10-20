@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { AttachmentPicker, type UploadStatus } from "./AttachmentPicker";
+import { AttachmentPicker } from "./AttachmentPicker";
+import type { UploadStatus } from "./attachments";
 import { MAX_ATTACHMENT_BYTES } from "./config";
 
 function makeFile(name: string, type = "image/jpeg", size = 10): File {

@@ -1,6 +1,8 @@
 import { API_BASE_URL } from "./config";
 import type { Attachment } from "./models";
 
+export type UploadStatus = "queued" | "uploading" | "done" | "failed";
+
 export interface UploadResult {
     uploaded: Attachment[];
     failed: { file: File; error: string }[];
@@ -51,17 +53,25 @@ export async function uploadAttachment(entryId: string, file: File): Promise<Att
 /**
  * Uploads one file at a time, in order, and never throws: each failure is
  * recorded so the caller can report it and retry just those files.
+ * `onStatus` reports each file moving from uploading to done or failed.
  */
-export async function uploadAttachments(entryId: string, files: File[]): Promise<UploadResult> {
+export async function uploadAttachments(
+    entryId: string,
+    files: File[],
+    onStatus?: (file: File, status: UploadStatus) => void,
+): Promise<UploadResult> {
     const result: UploadResult = { uploaded: [], failed: [] };
     for (const file of files) {
+        onStatus?.(file, "uploading");
         try {
             result.uploaded.push(await uploadAttachment(entryId, file));
+            onStatus?.(file, "done");
         } catch (err) {
             result.failed.push({
                 file,
                 error: err instanceof Error ? err.message : "Upload failed.",
             });
+            onStatus?.(file, "failed");
         }
     }
     return result;

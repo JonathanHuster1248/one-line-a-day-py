@@ -1,8 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { MAX_ATTACHMENTS_PER_ENTRY, MAX_ATTACHMENT_BYTES } from "./config";
 import { FileIcon } from "./FileIcon";
-
-export type UploadStatus = "queued" | "uploading" | "done" | "failed";
+import type { UploadStatus } from "./attachments";
 
 // A hint for the file browser only; the backend decides what it accepts.
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif,application/pdf";
