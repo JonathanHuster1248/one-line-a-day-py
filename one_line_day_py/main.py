@@ -12,6 +12,7 @@ from litestar.security.session_auth import SessionAuth
 from litestar.stores.file import FileStore
 
 from .src.controllers import (
+    AttachmentController,
     AuthController,
     JournalController,
     RootController,
@@ -56,6 +57,7 @@ def make_app():
             AuthController,
             RootController,
             JournalController,
+            AttachmentController,
             UserController,
         ],
         dependencies={
