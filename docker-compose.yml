@@ -15,6 +15,10 @@ services:
       HOST: 0.0.0.0
     volumes:
       - ./one_line_day_py/src/data/journal_entries.db:/app/one_line_day_py/src/data/journal_entries.db
+      # Uploaded photos/PDFs. Create the host directory first (see README), or
+      # Docker creates it owned by root. If you set ATTACHMENTS_PATH, point the
+      # container side of this mount at the same path.
+      - ./one_line_day_py/src/data/attachments:/app/one_line_day_py/src/data/attachments
 
   frontend:
     build:

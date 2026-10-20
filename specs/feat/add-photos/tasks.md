@@ -47,8 +47,8 @@ These three are independent of each other and can be done in any order.
 
 ## Phase 6: Deployment and configuration
 
-- [ ] **T6.1 nginx body limit.** Add `client_max_body_size 16m;` to `location /api/` in `frontend/nginx.conf`. [FR-5] *Done when:* a 15 MB upload succeeds through the Docker setup (verified in T10.2).
-- [ ] **T6.2 Docker and docs.** Add the attachments bind mount to `docker-compose.yml`; add a `mkdir -p` step to the README setup; document `ATTACHMENTS_PATH` in `example.env` and the README; note the bind-mount host directory must exist first. [NFR-5, NFR-6] *Done when:* `docker compose up --build` starts and uploaded files appear in the host directory.
+- [x] **T6.1 nginx body limit.** *(Added with a comment explaining the 1 MB default. The 15 MB upload through Docker is still to be verified in T10.2.)* Add `client_max_body_size 16m;` to `location /api/` in `frontend/nginx.conf`. [FR-5] *Done when:* a 15 MB upload succeeds through the Docker setup (verified in T10.2).
+- [x] **T6.2 Docker and docs.** *(Also added the attachments directory to `.dockerignore`, since `COPY . .` would otherwise bake uploaded photos into the backend image. Fixed `example.env`'s `ATTACHMENTS_PATH`: relative paths resolve from the working directory (repo root, `/app` in Docker), so the old `src/data/attachments` would have missed the bind mount. `docker compose config` validates; `docker compose up --build` itself still needs a manual run, since the sandbox couldn't reach the Docker daemon.)* Add the attachments bind mount to `docker-compose.yml`; add a `mkdir -p` step to the README setup; document `ATTACHMENTS_PATH` in `example.env` and the README; note the bind-mount host directory must exist first. [NFR-5, NFR-6] *Done when:* `docker compose up --build` starts and uploaded files appear in the host directory.
 
 ## Phase 7: Frontend foundation
 

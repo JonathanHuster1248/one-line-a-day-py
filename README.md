@@ -23,14 +23,17 @@ See the component READMEs for details:
 Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```
+mkdir -p one_line_day_py/src/data/attachments
 docker compose up --build
 ```
+
+The `mkdir` is needed once, before the first run: the attachments directory is bind-mounted, and if it doesn't exist Docker creates it owned by root.
 
 - App: <http://localhost:3000>
 - API (debugging only, bound to this machine): <http://localhost:8000>
 - Swagger UI: <http://localhost:8000/schema/swagger/>
 
-The SQLite file `one_line_day_py/src/data/journal_entries.db` is bind-mounted into the backend container, so your data persists on the host.
+The SQLite file `one_line_day_py/src/data/journal_entries.db` and the attachments directory `one_line_day_py/src/data/attachments/` (uploaded photos and PDFs) are bind-mounted into the backend container, so your data persists on the host. Back them up together. The attachments location is set by `ATTACHMENTS_PATH`, independently of `DB_PATH`; if you change it, change the container side of the bind mount in `docker-compose.yml` to match.
 
 Configuration is via environment variables in a `.env` file; copy `example.env` to start.
 
