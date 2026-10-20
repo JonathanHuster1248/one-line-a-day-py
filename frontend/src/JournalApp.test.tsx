@@ -28,6 +28,8 @@ function makeJournal(overrides: Partial<Journal> = {}): Journal {
         author_id: "author-1",
         date: "2025-07-25",
         message: "Had a great day",
+        attachments: [],
+        attachments_available: true,
         ...overrides,
     };
 }
