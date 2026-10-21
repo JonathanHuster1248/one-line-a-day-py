@@ -1,24 +1,39 @@
 from datetime import date
+from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import extract
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlalchemy import event, extract
+from sqlmodel import Session, SQLModel, col, create_engine, func, select
 
-from ..model import JournalEntry, User
+from ..exceptions import AttachmentLimitExceeded
+from ..model import Attachment, JournalEntry, User
+
+MAX_ATTACHMENTS_PER_ENTRY = 5  # keep in sync with frontend/src/config.ts
 
 
-def init_db(db_path: str):
+def init_db(db_path: Path):
+    # SQLite creates the file but not its directory; a fresh DB_PATH may point
+    # somewhere that doesn't exist yet.
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     engine = create_engine(
         f"sqlite:///{db_path}",
         echo=False,
         connect_args={"check_same_thread": False},
     )
+
+    @event.listens_for(engine, "connect")
+    def _enable_foreign_keys(dbapi_connection, _connection_record):
+        # SQLite ignores foreign keys (and ON DELETE CASCADE) unless enabled per connection.
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
     SQLModel.metadata.create_all(engine)
     return engine
 
 
 class UserDb:
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: Path):
         self.engine = init_db(db_path)
 
     async def add_user(self, user: User) -> User:
@@ -65,16 +80,26 @@ class UserDb:
 
             return user
 
-    async def delete_user(self, user_id: UUID) -> None:
+    async def delete_user(self, user_id: UUID) -> list[UUID]:
+        """Delete the user; their entries and attachment rows go via ON DELETE CASCADE.
+
+        Returns the deleted entry ids so the caller can remove their files.
+        """
         with Session(self.engine) as session:
             statement = select(User).where(User.id == user_id)
             user = session.exec(statement).one()
+            entry_ids = list(
+                session.exec(
+                    select(JournalEntry.id).where(JournalEntry.author_id == user_id)
+                )
+            )
             session.delete(user)
             session.commit()
+            return entry_ids
 
 
 class JournalDb:
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: Path):
         self.engine = init_db(db_path)
 
     async def add_entry(self, entry: JournalEntry) -> JournalEntry:
@@ -145,3 +170,88 @@ class JournalDb:
             entry = session.exec(statement).one()
             session.delete(entry)
             session.commit()
+
+
+class AttachmentDb:
+    """Attachment metadata rows. Used only by `AttachmentService`, never by a controller."""
+
+    def __init__(self, db_path: Path):
+        self.engine = init_db(db_path)
+
+    async def add_attachment(self, attachment: Attachment) -> Attachment:
+        """Count check and insert share one session; raises AttachmentLimitExceeded."""
+        with Session(self.engine) as session:
+            count = session.exec(
+                select(func.count())
+                .select_from(Attachment)
+                .where(Attachment.entry_id == attachment.entry_id)
+            ).one()
+            if count >= MAX_ATTACHMENTS_PER_ENTRY:
+                raise AttachmentLimitExceeded()
+            session.add(attachment)
+            session.commit()
+            session.refresh(attachment)
+            return attachment
+
+    async def get_scoped(
+        self, attachment_id: UUID, entry_id: UUID, author_id: UUID
+    ) -> Attachment | None:
+        """The one place that decides whether a user may touch an attachment."""
+        with Session(self.engine) as session:
+            statement = select(Attachment).where(
+                Attachment.id == attachment_id,
+                Attachment.entry_id == entry_id,
+                Attachment.author_id == author_id,
+            )
+            return session.exec(statement).one_or_none()
+
+    async def list_for_entry(self, entry_id: UUID, author_id: UUID) -> list[Attachment]:
+        return (await self.list_for_entries([entry_id], author_id))[entry_id]
+
+    async def list_for_entries(
+        self, entry_ids: list[UUID], author_id: UUID
+    ) -> dict[UUID, list[Attachment]]:
+        """Every requested entry id is a key, with an empty list when it has none."""
+        by_entry: dict[UUID, list[Attachment]] = {
+            entry_id: [] for entry_id in entry_ids
+        }
+        if not entry_ids:
+            return by_entry
+        with Session(self.engine) as session:
+            statement = (
+                select(Attachment)
+                .where(
+                    col(Attachment.entry_id).in_(entry_ids),
+                    Attachment.author_id == author_id,
+                )
+                .order_by(col(Attachment.created_at))
+            )
+            for attachment in session.exec(statement):
+                by_entry[attachment.entry_id].append(attachment)
+        return by_entry
+
+    async def delete(self, attachment_id: UUID) -> None:
+        with Session(self.engine) as session:
+            attachment = session.exec(
+                select(Attachment).where(Attachment.id == attachment_id)
+            ).one()
+            session.delete(attachment)
+            session.commit()
+
+    async def count_for_entry(self, entry_id: UUID) -> int:
+        with Session(self.engine) as session:
+            return session.exec(
+                select(func.count())
+                .select_from(Attachment)
+                .where(Attachment.entry_id == entry_id)
+            ).one()
+
+    async def existing_entry_ids(self, entry_ids: list[UUID]) -> set[UUID]:
+        """Which of the given ids are still journal entries (for the orphan sweep)."""
+        if not entry_ids:
+            return set()
+        with Session(self.engine) as session:
+            statement = select(JournalEntry.id).where(
+                col(JournalEntry.id).in_(entry_ids)
+            )
+            return set(session.exec(statement))

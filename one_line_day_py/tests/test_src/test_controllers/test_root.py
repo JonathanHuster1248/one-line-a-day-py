@@ -36,7 +36,7 @@ class TestDocsDisabled:
         from one_line_day_py.main import make_app
         from one_line_day_py.src.settings import settings
 
-        monkeypatch.setattr(settings, "db_path", str(tmp_path / "test.db"))
+        monkeypatch.setattr(settings, "db_path", tmp_path / "test.db")
         monkeypatch.setattr(settings, "enable_docs", False)
 
         with TestClient(app=make_app()) as c:

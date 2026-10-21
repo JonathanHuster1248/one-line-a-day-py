@@ -110,12 +110,18 @@ body {
 
 .new-entry-form {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.new-entry-row {
+    display: flex;
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
 }
 
-.new-entry-form input {
+.new-entry-row input {
     padding: 0.6rem 1rem;
     font-size: 1rem;
     font-family: inherit;
@@ -127,18 +133,18 @@ body {
     min-width: 0;
 }
 
-.new-entry-form input:focus {
+.new-entry-row input:focus {
     outline: none;
     border-color: #2e5e3a;
     box-shadow: 0 0 5px rgba(34, 139, 34, 0.5);
 }
 
-.new-entry-form input:disabled {
+.new-entry-row input:disabled {
     background-color: #f0f0ea;
     color: #999;
 }
 
-.new-entry-form button {
+.new-entry-row button {
     padding: 0.6rem 1.1rem;
     font-size: 1rem;
     font-family: inherit;
@@ -150,11 +156,11 @@ body {
     white-space: nowrap;
 }
 
-.new-entry-form button:hover:not(:disabled) {
+.new-entry-row button:hover:not(:disabled) {
     background-color: #d9ead9;
 }
 
-.new-entry-form button:disabled {
+.new-entry-row button:disabled {
     color: #999;
     border-color: #a9c8ac;
     cursor: not-allowed;
@@ -279,4 +285,340 @@ body {
     color: #999;
     border-color: #a9c8ac;
     cursor: not-allowed;
+}
+/* Attachments */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.file-icon {
+    color: #2e5e3a;
+    flex-shrink: 0;
+}
+
+.attachment-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #a9c8ac;
+}
+
+/* Every attachment gets the same box, whatever its source dimensions. */
+.attachment-thumb {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    background-color: #eaf3ea;
+    border: 2px solid #a9c8ac;
+    border-radius: 8px;
+    color: #2e5e3a;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.attachment-thumb:hover,
+.attachment-thumb:focus-visible {
+    border-color: #228B22;
+}
+
+.attachment-thumb:focus-visible {
+    outline: 2px solid #228B22;
+    outline-offset: 2px;
+}
+
+.attachment-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.2s ease;
+}
+
+/* Transparent rather than display: none, so the lazy image still loads. */
+.attachment-thumb-img.is-loading {
+    opacity: 0;
+}
+
+.attachment-skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #e3ece3 25%, #f3f7f2 50%, #e3ece3 75%);
+    background-size: 200% 100%;
+    animation: attachment-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes attachment-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .attachment-skeleton {
+        animation: none;
+    }
+}
+
+.attachment-thumb-file,
+.attachment-thumb-error {
+    padding: 0.35rem;
+}
+
+.attachment-thumb-error {
+    cursor: default;
+    border-color: #e2a9a9;
+    background-color: #fdf3f3;
+}
+
+.attachment-thumb-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.7rem;
+}
+
+.attachment-retry-button {
+    padding: 0.1rem 0.5rem;
+    font-size: 0.7rem;
+    font-family: inherit;
+    color: #2e5e3a;
+    background-color: #eaf3ea;
+    border: 1px solid #228B22;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.attachments-unavailable {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #777;
+}
+
+/* Opt out of the ruled-paper lines that .box p draws. */
+.box p.attachments-unavailable {
+    background-image: none;
+}
+
+/* Viewer */
+
+.attachment-viewer {
+    max-width: min(92vw, 1100px);
+    max-height: 92vh;
+    padding: 1rem;
+    border: 3px solid #228B22;
+    border-radius: 12px;
+    background-color: #fffdf8;
+    font-family: inherit;
+}
+
+.attachment-viewer::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.attachment-viewer-img {
+    display: block;
+    max-width: 100%;
+    max-height: calc(92vh - 6rem);
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.attachment-viewer-error {
+    margin: 2rem;
+    color: #a11;
+    text-align: center;
+}
+
+.attachment-viewer-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.attachment-viewer-actions a {
+    text-decoration: none;
+}
+
+/* Picker and drop zone */
+
+.attachment-picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    box-sizing: border-box;
+    border: 2px dashed #a9c8ac;
+    border-radius: 12px;
+    color: #2e5e3a;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.attachment-picker.is-dragging {
+    background-color: #eaf3ea;
+    border-color: #228B22;
+}
+
+.picker-button {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    color: #2e5e3a;
+    background-color: #eaf3ea;
+    border: 2px solid #228B22;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.picker-button:hover {
+    background-color: #d9ead9;
+}
+
+/* The real input is visually hidden; show its focus and disabled state on the label. */
+.visually-hidden:focus-visible + .picker-button {
+    outline: 2px solid #228B22;
+    outline-offset: 2px;
+}
+
+.visually-hidden:disabled + .picker-button {
+    color: #999;
+    border-color: #a9c8ac;
+    cursor: not-allowed;
+}
+
+.picker-hint {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.picker-errors,
+.picker-files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.picker-errors {
+    color: #a11;
+    font-size: 0.85rem;
+}
+
+.picker-files {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.picker-file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.picker-preview {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.picker-preview-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eaf3ea;
+}
+
+.picker-file-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.picker-file-status {
+    font-size: 0.75rem;
+    color: #777;
+}
+
+.picker-remove-button {
+    width: 1.6rem;
+    height: 1.6rem;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    color: #a11;
+    background-color: #fbe7e7;
+    border: 2px solid #cc2222;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.picker-remove-button:disabled {
+    color: #c98a8a;
+    border-color: #e2a9a9;
+    cursor: not-allowed;
+}
+
+/* Upload failure notice */
+
+.upload-failure-notice {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    box-sizing: border-box;
+    background-color: #fdf3f3;
+    border: 2px solid #e2a9a9;
+    border-radius: 12px;
+    color: #a11;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.box .upload-failure-notice p {
+    background-image: none;
+}
+
+.upload-failure-notice ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.2rem;
+}
+
+.upload-failure-name {
+    font-weight: bold;
+}
+
+/* Inside an edit-mode box, which centers its children. */
+.box .attachment-picker,
+.box .edit-attachments {
+    margin-top: 0.5rem;
 }

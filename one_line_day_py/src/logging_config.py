@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from litestar.logging import LoggingConfig
 from litestar.middleware.logging import LoggingMiddlewareConfig
 
@@ -13,9 +11,11 @@ logging_middleware_config = LoggingMiddlewareConfig(
     response_log_fields=["status_code"],
 )
 
+IMAGE_LIBRARY_LOGGERS = ("PIL", "pillow_heif")
+
 
 def create_logging_config() -> LoggingConfig:
-    log_dir = Path(settings.db_path).parent / ".logs"
+    log_dir = settings.db_path.parent / ".logs"
     log_dir.mkdir(parents=True, exist_ok=True)
 
     return LoggingConfig(
@@ -51,6 +51,9 @@ def create_logging_config() -> LoggingConfig:
                 "handlers": ["queue_listener"],
                 "propagate": False,
             },
+            # At DEBUG, Pillow logs every EXIF tag it parses (camera, timestamps,
+            # GPS), so its loggers stay at WARNING whatever LOG_LEVEL is.
+            **{name: {"level": "WARNING"} for name in IMAGE_LIBRARY_LOGGERS},
         },
         root={"level": settings.log_level, "handlers": ["queue_listener"]},
     )

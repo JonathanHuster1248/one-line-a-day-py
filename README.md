@@ -9,8 +9,8 @@ A pet project by Jonathan Huster: a digital version of the [5 year journal](http
               frontend/                            one_line_day_py/         journal_entries.db
 ```
 
-- **Frontend** (`frontend/`): a React + TypeScript single-page app. Log in, pick a date, and see every entry written on that month/day across all years. Add, edit, and delete entries inline.
-- **Backend** (`one_line_day_py/`): a Litestar (Python) REST API backed by SQLite via SQLModel. Handles signup/login with session cookies and argon2-hashed passwords. Every journal entry is private to its author.
+- **Frontend** (`frontend/`): a React + TypeScript single-page app. Log in, pick a date, and see every entry written on that month/day across all years. Add, edit, and delete entries inline, and attach up to 5 photos or PDFs to each one.
+- **Backend** (`one_line_day_py/`): a Litestar (Python) REST API backed by SQLite via SQLModel. Handles signup/login with session cookies and argon2-hashed passwords. Every journal entry and attachment is private to its author. Uploaded files are stored on disk (`ATTACHMENTS_PATH`), with thumbnails and display copies generated at upload.
 - **Deployment**: Docker Compose runs both. The frontend's nginx serves the built app and proxies `/api/` to the backend, so the browser only ever talks to one origin.
 
 See the component READMEs for details:
@@ -23,16 +23,19 @@ See the component READMEs for details:
 Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```
+cp example.env .env
+mkdir -p one_line_day_py/src/data/attachments
+touch one_line_day_py/src/data/journal_entries.db
 docker compose up --build
 ```
+
+The `cp`, `mkdir`, and `touch` are needed once, before the first run. `docker-compose.yml` loads `.env` via `env_file` and won't start without it; edit it to change configuration (see the comments in `example.env`). The attachments directory and the SQLite file are bind-mounted, and if either doesn't exist Docker creates it owned by root (and creates the database path as a directory, not a file).
 
 - App: <http://localhost:3000>
 - API (debugging only, bound to this machine): <http://localhost:8000>
 - Swagger UI: <http://localhost:8000/schema/swagger/>
 
-The SQLite file `one_line_day_py/src/data/journal_entries.db` is bind-mounted into the backend container, so your data persists on the host.
-
-Configuration is via environment variables in a `.env` file; copy `example.env` to start.
+The SQLite file `one_line_day_py/src/data/journal_entries.db` and the attachments directory `one_line_day_py/src/data/attachments/` (uploaded photos and PDFs) are bind-mounted into the backend container, so your data persists on the host. Back them up together. The attachments location is set by `ATTACHMENTS_PATH`, independently of `DB_PATH`; if you change it, change the container side of the bind mount in `docker-compose.yml` to match.
 
 ## Contributing
 

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { getJournals, createJournalEntry, updateJournalEntry, deleteJournalEntry } from "./journals";
-import type { Journal } from "./models";
+import { uploadAttachments, type UploadResult, type UploadStatus } from "./attachments";
+import type { Attachment, Journal } from "./models";
 import { useAuth } from "./AuthContext";
 import { JournalBox } from "./JournalBox";
+import { AttachmentPicker } from "./AttachmentPicker";
+import { UploadFailureNotice } from "./UploadFailureNotice";
 import { formatMonthDay, shiftDate, shiftYear, todayISODate } from "./date";
 
 export function JournalApp() {
@@ -13,6 +16,13 @@ export function JournalApp() {
     const [message, setMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
+    const [statuses, setStatuses] = useState<Map<File, UploadStatus>>(new Map());
+    // Uploads that failed after their entry was created, kept so Retry can target that entry.
+    const [uploadFailure, setUploadFailure] = useState<{ entryId: string; failed: UploadResult["failed"] } | null>(
+        null,
+    );
+    const [isRetrying, setIsRetrying] = useState(false);
 
     useEffect(() => {
         let isCurrent = true;
@@ -43,16 +53,57 @@ export function JournalApp() {
 
         setIsSubmitting(true);
         setError(null);
+        setUploadFailure(null);
+        let created: Journal;
         try {
-            const created = await createJournalEntry(selectedDate, message);
-            setJournals((prev) => [...prev, created]);
-            setMessage("");
+            created = await createJournalEntry(selectedDate, message);
         } catch (error) {
             console.error("Failed to create journal entry:", error);
             setError("Failed to save entry. Please try again.");
-        } finally {
             setIsSubmitting(false);
+            return;
         }
+
+        // The entry is saved before any file is sent, so a failed upload never loses it.
+        setJournals((prev) => [...prev, created]);
+        setMessage("");
+
+        if (files.length > 0) {
+            setStatuses(new Map(files.map((file) => [file, "queued"])));
+            const result = await uploadAttachments(created.id, files, (file, status) =>
+                setStatuses((prev) => new Map(prev).set(file, status)),
+            );
+            addAttachments(created.id, result.uploaded);
+            if (result.failed.length > 0) {
+                setUploadFailure({ entryId: created.id, failed: result.failed });
+            }
+            setFiles([]);
+            setStatuses(new Map());
+        }
+        setIsSubmitting(false);
+    };
+
+    const addAttachments = (entryId: string, attachments: Attachment[]) => {
+        if (attachments.length === 0) return;
+        setJournals((prev) =>
+            prev.map((j) => (j.id === entryId ? { ...j, attachments: [...j.attachments, ...attachments] } : j)),
+        );
+    };
+
+    const handleRetryUploads = async () => {
+        if (!uploadFailure) return;
+        setIsRetrying(true);
+        const result = await uploadAttachments(
+            uploadFailure.entryId,
+            uploadFailure.failed.map((f) => f.file),
+        );
+        addAttachments(uploadFailure.entryId, result.uploaded);
+        setUploadFailure(result.failed.length > 0 ? { entryId: uploadFailure.entryId, failed: result.failed } : null);
+        setIsRetrying(false);
+    };
+
+    const handleAttachmentsChange = (journalId: string, attachments: Attachment[]) => {
+        setJournals((prev) => prev.map((j) => (j.id === journalId ? { ...j, attachments } : j)));
     };
 
     const handleUpdate = async (journal: Journal, date: string, message: string) => {
@@ -127,21 +178,33 @@ export function JournalApp() {
                             journal={journal}
                             onUpdate={handleUpdate}
                             onDelete={handleDelete}
+                            onAttachmentsChange={handleAttachmentsChange}
                         />
                     ))}
                 </div>
                 <form onSubmit={handleSubmit} className="new-entry-form">
-                    <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Write a new entry for this day..."
-                        disabled={isSubmitting}
-                    />
-                    <button type="submit" disabled={isSubmitting || !message.trim()}>
-                        {isSubmitting ? "Sending..." : "Send"}
-                    </button>
+                    <div className="new-entry-row">
+                        <input
+                            type="text"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Write a new entry for this day..."
+                            disabled={isSubmitting}
+                        />
+                        <button type="submit" disabled={isSubmitting || !message.trim()}>
+                            {isSubmitting ? "Sending..." : "Send"}
+                        </button>
+                    </div>
+                    <AttachmentPicker files={files} onChange={setFiles} disabled={isSubmitting} statuses={statuses} />
                 </form>
+                {uploadFailure && (
+                    <UploadFailureNotice
+                        failed={uploadFailure.failed}
+                        onRetry={handleRetryUploads}
+                        onDismiss={() => setUploadFailure(null)}
+                        retrying={isRetrying}
+                    />
+                )}
             </div>
         </div>
     );

@@ -2,26 +2,12 @@ One line a day
 - API 
   - Update the API schema and adjust backends to match
     - Add sections to swagger UI for clarity
-    - Make photos table for separate responsibilities
-    - Add components and schemas
 	- Tagging People/Groups
-  - Photos assigned to Journals 
-  - Photos accessible via backend
+  - Attachment orphan sweep: startup currently moves orphaned entry directories to `{ATTACHMENTS_PATH}/.trash/` instead of deleting them, so a misconfigured or empty DB can't wipe every attachment. Explore a more robust approach (e.g. a DB/storage identity marker checked before sweeping, skipping the sweep when the DB has no entries, an age threshold, and/or automatic trash expiry); `.trash` is never emptied today
 - FE 
-  - Allow edit and delete buttons on journals
-  - Display photos with each journal
-- Dockerize
-	- Allow env variables
-- Enable photo storage
-- Deploy and utilize mine
+  - Allow sharing with other products? Reddit, twitter, tumblr, etc.
 - Github/infra
-  - squash commit by default
   - Auto actions on merge
-    - Make docker images
     - Deploy? 
 - Documentation
-  - Update readme and how to run
   - Make a wiki? 
-- Testing
-  - Add backend testing
-  - Look into how frontend testing works?

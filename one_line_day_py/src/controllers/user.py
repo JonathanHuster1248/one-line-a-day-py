@@ -9,6 +9,7 @@ from litestar.exceptions import ClientException, PermissionDeniedException
 from ..data.db import UserDb
 from ..model import UserPublic
 from ..schemas import to_public_user
+from .journal import EntryAttachmentsDep
 
 UsersDb = NamedDependency[UserDb]
 
@@ -53,7 +54,14 @@ class UserController(Controller):
 
     @delete("/{user_id:uuid}")
     async def delete_user(
-        self, request: Request, users_db: UsersDb, user_id: UUID
+        self,
+        request: Request,
+        users_db: UsersDb,
+        entry_attachments: EntryAttachmentsDep,
+        user_id: UUID,
     ) -> None:
         _check_is_self(request, user_id)
-        await users_db.delete_user(user_id)
+        # Rows go in one transaction; files are removed after it commits.
+        entry_ids = await users_db.delete_user(user_id)
+        for entry_id in entry_ids:
+            await entry_attachments.remove_entry_files(entry_id)

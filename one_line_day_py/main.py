@@ -1,5 +1,4 @@
 from importlib.metadata import version
-from pathlib import Path
 
 import uvicorn
 from litestar import Litestar
@@ -13,6 +12,7 @@ from litestar.security.session_auth import SessionAuth
 from litestar.stores.file import FileStore
 
 from .src.controllers import (
+    AttachmentController,
     AuthController,
     JournalController,
     RootController,
@@ -20,8 +20,12 @@ from .src.controllers import (
     retrieve_user_handler,
 )
 from .src.dependencies import (
+    GuardedEntryAttachments,
+    create_attachment_service,
     create_journals_db,
     create_users_db,
+    provide_attachment_service,
+    provide_entry_attachments,
     provide_journals_db,
     provide_users_db,
 )
@@ -45,20 +49,36 @@ def make_app():
         ],
     )
 
+    journals_db = create_journals_db()
+    attachment_service = create_attachment_service(journals_db)
+
     return Litestar(
         route_handlers=[
             AuthController,
             RootController,
             JournalController,
+            AttachmentController,
             UserController,
         ],
         dependencies={
             "users_db": Provide(provide_users_db, sync_to_thread=False),
             "journals_db": Provide(provide_journals_db, sync_to_thread=False),
+            "attachment_service": Provide(
+                provide_attachment_service, sync_to_thread=False
+            ),
+            "entry_attachments": Provide(
+                provide_entry_attachments, sync_to_thread=False
+            ),
         },
         state=State(
-            {"users_db": create_users_db(), "journals_db": create_journals_db()}
+            {
+                "users_db": create_users_db(),
+                "journals_db": journals_db,
+                "attachment_service": attachment_service,
+                "entry_attachments": GuardedEntryAttachments(attachment_service),
+            }
         ),
+        on_startup=[attachment_service.sweep_orphans],
         exception_handlers=exception_handlers,
         cors_config=CORSConfig(
             allow_origins=settings.cors_allowed_origins,
@@ -80,7 +100,7 @@ def make_app():
         on_app_init=[session_auth.on_app_init],
         stores={
             "sessions": FileStore(
-                Path(settings.db_path).parent / ".sessions", create_directories=True
+                settings.db_path.parent / ".sessions", create_directories=True
             )
         },
         logging_config=create_logging_config(),

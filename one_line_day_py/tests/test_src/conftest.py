@@ -7,8 +7,8 @@ from one_line_day_py.src.settings import settings
 
 @pytest.fixture
 def app(tmp_path, monkeypatch):
-    db_path = str(tmp_path / "test.db")
-    monkeypatch.setattr(settings, "db_path", db_path)
+    monkeypatch.setattr(settings, "db_path", tmp_path / "test.db")
+    monkeypatch.setattr(settings, "attachments_path", tmp_path / "attachments")
     return make_app()
 
 

@@ -5,3 +5,5 @@
 .env
 
 *.db
+# User uploads are bind-mounted at runtime; never bake them into the image
+one_line_day_py/src/data/attachments

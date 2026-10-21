@@ -6,12 +6,13 @@ from pydantic_settings import BaseSettings
 load_dotenv()
 
 
-DEFAULT_DB_PATH = str(Path(__file__).parent.resolve() / "data" / "journal_entries.db")
+DEFAULT_DB_PATH = Path(__file__).parent.resolve() / "data" / "journal_entries.db"
+DEFAULT_ATTACHMENTS_PATH = Path(__file__).parent.resolve() / "data" / "attachments"
 
 
 class CoreSettings(BaseSettings):
-    db_path: str = DEFAULT_DB_PATH
-    # TODO: Set db_path to be a Path type (unsure why I didn't have that already)
+    db_path: Path = DEFAULT_DB_PATH  # DB_PATH
+    attachments_path: Path = DEFAULT_ATTACHMENTS_PATH  # ATTACHMENTS_PATH
     debug: bool = True  # DEBUG=false in prod (disables Litestar's debug tracebacks)
     session_cookie_secure: bool = False  # SESSION_COOKIE_SECURE=true in prod (HTTPS)
     cors_allowed_origins: list[str] = ["http://localhost:5173"]  # CORS_ALLOWED_ORIGINS
