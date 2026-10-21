@@ -23,20 +23,19 @@ See the component READMEs for details:
 Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```
+cp example.env .env
 mkdir -p one_line_day_py/src/data/attachments
 touch one_line_day_py/src/data/journal_entries.db
 docker compose up --build
 ```
 
-The `mkdir` and `touch` are needed once, before the first run: the attachments directory and the SQLite file are bind-mounted, and if either doesn't exist Docker creates it owned by root (and creates the database path as a directory, not a file).
+The `cp`, `mkdir`, and `touch` are needed once, before the first run. `docker-compose.yml` loads `.env` via `env_file` and won't start without it; edit it to change configuration (see the comments in `example.env`). The attachments directory and the SQLite file are bind-mounted, and if either doesn't exist Docker creates it owned by root (and creates the database path as a directory, not a file).
 
 - App: <http://localhost:3000>
 - API (debugging only, bound to this machine): <http://localhost:8000>
 - Swagger UI: <http://localhost:8000/schema/swagger/>
 
 The SQLite file `one_line_day_py/src/data/journal_entries.db` and the attachments directory `one_line_day_py/src/data/attachments/` (uploaded photos and PDFs) are bind-mounted into the backend container, so your data persists on the host. Back them up together. The attachments location is set by `ATTACHMENTS_PATH`, independently of `DB_PATH`; if you change it, change the container side of the bind mount in `docker-compose.yml` to match.
-
-Configuration is via environment variables in a `.env` file; copy `example.env` to start.
 
 ## Contributing
 
