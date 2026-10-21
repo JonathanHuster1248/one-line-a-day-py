@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, renderHook, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
-import { AuthProvider, useAuth } from "./AuthContext";
-import { getCurrentUser, login, logout, signup, type User } from "./auth";
+import { AuthProvider, useAuth } from "./auth/AuthContext";
+import { getCurrentUser, login, logout, signup, type User } from "./auth/auth";
+import { makeUser } from "./test/factories";
 
-vi.mock("./auth", async (importOriginal) => ({
-    EmailTakenError: (await importOriginal<typeof import("./auth")>()).EmailTakenError,
+vi.mock("./auth/auth", async (importOriginal) => ({
+    EmailTakenError: (await importOriginal<typeof import("./auth/auth")>()).EmailTakenError,
     getCurrentUser: vi.fn(),
     login: vi.fn(),
     logout: vi.fn(),
@@ -14,7 +15,7 @@ vi.mock("./auth", async (importOriginal) => ({
 }));
 
 // The journal page has its own tests; here it only needs to show who's logged in and log out.
-vi.mock("./JournalApp", () => ({
+vi.mock("./journal/JournalApp", () => ({
     JournalApp: () => {
         const { user, logout } = useAuth();
         return (
@@ -33,7 +34,7 @@ const mockedLogin = vi.mocked(login);
 const mockedLogout = vi.mocked(logout);
 const mockedSignup = vi.mocked(signup);
 
-const alice: User = { id: "u1", name: "Alice", email: "alice@example.com" };
+const alice = makeUser();
 
 function renderApp() {
     const user = userEvent.setup();
