@@ -2,6 +2,25 @@
 
 All notable changes to the frontend are documented here.
 
+## [0.3.1] - 2026-10-21
+
+Clearer errors, two bug fixes, and a feature-based source layout.
+
+### Fixed
+- A failed load left "Failed to load entries for this day." on screen after later loads succeeded.
+- An entry edited onto a different month/day stayed listed on the current page.
+- `getJournal` returned the error body as an entry instead of throwing on a non-OK response.
+
+### Changed
+- Creating or moving an entry onto a date that already has one shows "You already have an entry for that date." (`DuplicateDateError`, from the backend's `409`), and keeps the draft.
+- Signing up with an email that's already registered shows "That email is already registered." (`EmailTakenError`).
+- Source is grouped by feature: `src/auth/`, `src/journal/`, `src/attachments/` and `src/shared/`, with `main.tsx`/`App.tsx` at the root. Tests stay next to the modules they cover.
+
+### Tests
+- New suites for `journals.ts`, `auth.ts`, `AttachmentViewer`, and the `App`/`AuthProvider` auth gate.
+- `JournalApp`: date navigation, duplicate-date message, blank entries, editing (including moving to another day), logout. `JournalBox`: plain edits, Cancel, blank messages, declined and failed deletes. `AuthForms`: signup errors.
+- Shared test data in `src/test/factories.ts` (`makeUser`, `makeJournal`, `makeAttachment`, `makeFile`, `jsonResponse`), replacing per-file copies that had drifted apart.
+
 ## [0.3.0] - 2026-10-19
 
 Photo and PDF attachments on journal entries.
