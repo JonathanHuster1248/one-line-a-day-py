@@ -1,6 +1,6 @@
-import { useAuth } from "./AuthContext";
-import { AuthForms } from "./AuthForms";
-import { JournalApp } from "./JournalApp";
+import { useAuth } from "./auth/AuthContext";
+import { AuthForms } from "./auth/AuthForms";
+import { JournalApp } from "./journal/JournalApp";
 
 export default function App() {
     const { user, loading } = useAuth();

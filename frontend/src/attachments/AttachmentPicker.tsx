@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
-import { MAX_ATTACHMENTS_PER_ENTRY, MAX_ATTACHMENT_BYTES } from "./config";
-import { FileIcon } from "./FileIcon";
+import { MAX_ATTACHMENTS_PER_ENTRY, MAX_ATTACHMENT_BYTES } from "../shared/config";
+import { FileIcon } from "../shared/FileIcon";
 import type { UploadStatus } from "./attachments";
 
 // A hint for the file browser only; the backend decides what it accepts.

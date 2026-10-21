@@ -1,50 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { JournalBox } from "./JournalBox";
-import { AttachmentThumb } from "./AttachmentThumb";
-import type { Attachment, Journal } from "./models";
+import { DuplicateDateError } from "./journals";
+import { AttachmentThumb } from "../attachments/AttachmentThumb";
+import type { Attachment, Journal } from "../shared/models";
+import { jsonResponse, makeAttachment, makeFile, makeJournal } from "../test/factories";
 
-vi.mock("./AttachmentThumb", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("./AttachmentThumb")>();
+vi.mock("../attachments/AttachmentThumb", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../attachments/AttachmentThumb")>();
     return { AttachmentThumb: vi.fn(actual.AttachmentThumb) };
 });
 
 const mockedThumb = vi.mocked(AttachmentThumb);
-
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "1",
-        filename: "beach.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 640,
-        height: 480,
-        ...overrides,
-    };
-}
-
-function makeJournal(overrides: Partial<Journal> = {}): Journal {
-    return {
-        id: "1",
-        author_id: "author-1",
-        date: "2025-07-25",
-        message: "Had a great day",
-        attachments: [],
-        attachments_available: true,
-        ...overrides,
-    };
-}
-
-function jsonResponse(body: unknown, status = 201): Response {
-    return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-}
-
-function makeFile(name: string): File {
-    return new File(["data"], name, { type: "image/jpeg" });
-}
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -228,5 +196,79 @@ describe("JournalBox", () => {
 
         await user.click(screen.getByRole("button", { name: "Edit" }));
         expect(screen.getByDisplayValue("Had a great day")).toBeInTheDocument();
+    });
+
+    it("saves edited text and date, then returns to view mode", async () => {
+        const user = renderBox(makeJournal());
+
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        const text = screen.getByDisplayValue("Had a great day");
+        await user.clear(text);
+        await user.type(text, "Had a better day");
+        fireEvent.change(screen.getByDisplayValue("2025-07-25"), { target: { value: "2024-07-25" } });
+        await user.click(screen.getByRole("button", { name: "Save" }));
+
+        expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ id: "1" }), "2024-07-25", "Had a better day");
+        expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(onAttachmentsChange).not.toHaveBeenCalled();
+    });
+
+    it("discards edits on Cancel and starts fresh next time", async () => {
+        const user = renderBox(makeJournal());
+
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        await user.type(screen.getByDisplayValue("Had a great day"), " (draft)");
+        await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+        expect(onUpdate).not.toHaveBeenCalled();
+        expect(screen.getByText("Had a great day")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        expect(screen.getByDisplayValue("Had a great day")).toBeInTheDocument();
+    });
+
+    it("won't save a blank message", async () => {
+        const user = renderBox(makeJournal());
+
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        await user.clear(screen.getByDisplayValue("Had a great day"));
+
+        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+        expect(onUpdate).not.toHaveBeenCalled();
+    });
+
+    it("explains a clash when moving to a date that already has an entry", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        onUpdate.mockRejectedValue(new DuplicateDateError());
+        const user = renderBox(makeJournal());
+
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        await user.click(screen.getByRole("button", { name: "Save" }));
+
+        expect(await screen.findByText("You already have an entry for that date.")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+    });
+
+    it("does nothing when the delete confirmation is declined", async () => {
+        vi.spyOn(window, "confirm").mockReturnValue(false);
+        const user = renderBox(makeJournal());
+
+        await user.click(screen.getByRole("button", { name: "Delete" }));
+
+        expect(onDelete).not.toHaveBeenCalled();
+        expect(screen.getByRole("button", { name: "Delete" })).toBeEnabled();
+    });
+
+    it("shows an error and re-enables Delete when the delete fails", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        vi.spyOn(window, "confirm").mockReturnValue(true);
+        onDelete.mockRejectedValue(new Error("nope"));
+        const user = renderBox(makeJournal());
+
+        await user.click(screen.getByRole("button", { name: "Delete" }));
+
+        expect(await screen.findByText("Failed to delete entry. Please try again.")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Delete" })).toBeEnabled();
     });
 });

@@ -2,6 +2,20 @@
 
 All notable changes to the backend are documented here.
 
+## [0.4.1] - 2026-10-21
+
+Journal entry date conflicts and test coverage.
+
+### Fixed
+- Creating a journal entry on a date that already has one, or moving an entry onto such a date, returned `500`. It now returns `409 Conflict` ("An entry already exists for that date") via a new `DuplicateEntryDate` domain exception, and leaves the existing entry unchanged.
+
+### Removed
+- The unused `JournalDb.get_entry_author` (the `/journals/{id}/author` route uses `_get_owned_entry`).
+
+### Tests
+- Journal controller: create, `409` on duplicate dates for create and update, date changes via `input_date`, empty updates, `400` for missing or malformed params, and `404` for unknown or non-UUID ids.
+- `list_entries` filters: month+day across years, year, month alone, Feb 29, out-of-range values, non-integer values, and no leaks between users.
+
 ## [0.4.0] - 2026-10-19
 
 Photo and PDF attachments on journal entries.

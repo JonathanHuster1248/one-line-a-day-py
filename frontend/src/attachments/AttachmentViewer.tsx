@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Attachment } from "./models";
+import type { Attachment } from "../shared/models";
 import { contentUrl } from "./attachments";
 
 /**

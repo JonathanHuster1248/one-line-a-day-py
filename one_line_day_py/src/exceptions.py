@@ -27,6 +27,10 @@ class StorageUnavailable(Exception):
     """The attachments directory could not be written to."""
 
 
+class DuplicateEntryDate(Exception):
+    """The user already has a journal entry on that date."""
+
+
 def _handler(status_code: int, detail: str):
     def handle(request: Request, exc: Exception) -> Response:
         http_exc = HTTPException(detail=detail, status_code=status_code)
@@ -51,5 +55,8 @@ exception_handlers: ExceptionHandlersMap = {
     ),
     StorageUnavailable: _handler(
         HTTPStatus.SERVICE_UNAVAILABLE, "Attachment storage is unavailable"
+    ),
+    DuplicateEntryDate: _handler(
+        HTTPStatus.CONFLICT, "An entry already exists for that date"
     ),
 }

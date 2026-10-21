@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "./config";
-import type { Attachment } from "./models";
+import { API_BASE_URL } from "../shared/config";
+import type { Attachment } from "../shared/models";
 
 export type UploadStatus = "queued" | "uploading" | "done" | "failed";
 

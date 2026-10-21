@@ -1,11 +1,12 @@
 import { useState } from "react";
-import type { Attachment, Journal } from "./models";
-import { formatYear } from "./date";
-import { deleteAttachment, uploadAttachments, type UploadResult, type UploadStatus } from "./attachments";
-import { AttachmentFooter } from "./AttachmentFooter";
-import { AttachmentPicker } from "./AttachmentPicker";
-import { UploadFailureNotice } from "./UploadFailureNotice";
-import { FileIcon } from "./FileIcon";
+import type { Attachment, Journal } from "../shared/models";
+import { formatYear } from "../shared/date";
+import { deleteAttachment, uploadAttachments, type UploadResult, type UploadStatus } from "../attachments/attachments";
+import { AttachmentFooter } from "../attachments/AttachmentFooter";
+import { AttachmentPicker } from "../attachments/AttachmentPicker";
+import { UploadFailureNotice } from "../attachments/UploadFailureNotice";
+import { FileIcon } from "../shared/FileIcon";
+import { DuplicateDateError } from "./journals";
 
 export function JournalBox({
     journal,
@@ -87,7 +88,7 @@ export function JournalBox({
             await onUpdate(journal, editDate, editMessage);
         } catch (error) {
             console.error("Failed to update journal entry:", error);
-            setError("Failed to save changes. Please try again.");
+            setError(error instanceof DuplicateDateError ? error.message : "Failed to save changes. Please try again.");
             setIsSaving(false);
             return;
         }

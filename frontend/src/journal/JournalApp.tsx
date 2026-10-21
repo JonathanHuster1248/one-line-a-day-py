@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { getJournals, createJournalEntry, updateJournalEntry, deleteJournalEntry } from "./journals";
-import { uploadAttachments, type UploadResult, type UploadStatus } from "./attachments";
-import type { Attachment, Journal } from "./models";
-import { useAuth } from "./AuthContext";
+import { getJournals, createJournalEntry, updateJournalEntry, deleteJournalEntry, DuplicateDateError } from "./journals";
+import { uploadAttachments, type UploadResult, type UploadStatus } from "../attachments/attachments";
+import type { Attachment, Journal } from "../shared/models";
+import { useAuth } from "../auth/AuthContext";
 import { JournalBox } from "./JournalBox";
-import { AttachmentPicker } from "./AttachmentPicker";
-import { UploadFailureNotice } from "./UploadFailureNotice";
-import { formatMonthDay, shiftDate, shiftYear, todayISODate } from "./date";
+import { AttachmentPicker } from "../attachments/AttachmentPicker";
+import { UploadFailureNotice } from "../attachments/UploadFailureNotice";
+import { formatMonthDay, shiftDate, shiftYear, todayISODate } from "../shared/date";
 
 export function JournalApp() {
     const { logout } = useAuth();
@@ -29,6 +29,7 @@ export function JournalApp() {
 
         async function loadJournals() {
             setIsLoading(true);
+            setError(null);
             try {
                 const [, month, day] = selectedDate.split("-").map(Number);
                 const fetchedJournals = await getJournals(month, day);
@@ -59,7 +60,7 @@ export function JournalApp() {
             created = await createJournalEntry(selectedDate, message);
         } catch (error) {
             console.error("Failed to create journal entry:", error);
-            setError("Failed to save entry. Please try again.");
+            setError(error instanceof DuplicateDateError ? error.message : "Failed to save entry. Please try again.");
             setIsSubmitting(false);
             return;
         }
@@ -108,7 +109,11 @@ export function JournalApp() {
 
     const handleUpdate = async (journal: Journal, date: string, message: string) => {
         const updated = await updateJournalEntry(journal.id, date, message);
-        setJournals((prev) => prev.map((j) => (j.id === updated.id ? updated : j)));
+        // An entry moved to another month/day no longer belongs on this page.
+        const stillHere = updated.date.slice(5) === selectedDate.slice(5);
+        setJournals((prev) =>
+            stillHere ? prev.map((j) => (j.id === updated.id ? updated : j)) : prev.filter((j) => j.id !== updated.id),
+        );
     };
 
     const handleDelete = async (journal: Journal) => {
