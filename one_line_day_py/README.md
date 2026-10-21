@@ -51,7 +51,8 @@ Each entry can have up to 5 attachments: images (JPEG, PNG, WebP, GIF, HEIC/HEIF
 - Images are processed once, at upload: EXIF orientation applied, HEIC decoded, GIFs reduced to their first frame. Re-encoding to WebP drops EXIF metadata from what is served. PDFs are stored as-is.
 - Entry responses embed attachment metadata (`attachments`, plus `attachments_available`, which is `false` only if the lookup failed; the entries still return `200`).
 - Errors: `400` over the 5-file limit, `404` for anything that isn't the caller's (including another user's entry or the wrong `entry_id`), `413` over 15 MB, `415` unsupported type, `422` undecodable image, `503` storage unwritable.
-- Deleting an entry deletes its attachment rows (database cascade) and its files; a startup sweep removes any directory left behind.
+- Deleting an entry deletes its attachment rows (database cascade) and its files. Deleting a user deletes all of their entries, attachment rows and files.
+- At startup, any attachment directory whose entry no longer exists is moved to `{ATTACHMENTS_PATH}/.trash/` rather than deleted, so pointing the app at the wrong database can't destroy attachments. Nothing empties the trash yet; clear it by hand once you've checked it.
 - Logs never contain filenames, file contents or EXIF, only attachment ids, kind, content type, size and error class. Pillow's loggers are held at `WARNING` because its debug output includes EXIF values.
 
 ## Configuration

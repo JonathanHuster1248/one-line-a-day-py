@@ -3,7 +3,7 @@ One line a day
   - Update the API schema and adjust backends to match
     - Add sections to swagger UI for clarity
 	- Tagging People/Groups
-  - Complete user deletion: deleting a user should also delete their journal entries and attachments (rows and files on disk)
+  - Attachment orphan sweep: startup currently moves orphaned entry directories to `{ATTACHMENTS_PATH}/.trash/` instead of deleting them, so a misconfigured or empty DB can't wipe every attachment. Explore a more robust approach (e.g. a DB/storage identity marker checked before sweeping, skipping the sweep when the DB has no entries, an age threshold, and/or automatic trash expiry); `.trash` is never emptied today
 - FE 
   - Allow sharing with other products? Reddit, twitter, tumblr, etc.
 - Github/infra

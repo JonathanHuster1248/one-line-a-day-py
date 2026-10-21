@@ -1,6 +1,21 @@
+import io
 from uuid import uuid4
 
 from litestar.testing import TestClient
+from PIL import Image
+
+
+def create_entry(client: TestClient) -> str:
+    return client.post("/journals/?date=2026-01-01&message=hi").json()["id"]
+
+
+def upload(client: TestClient, entry_id: str):
+    buf = io.BytesIO()
+    Image.new("RGB", (64, 64), "red").save(buf, format="PNG")
+    return client.post(
+        f"/journals/{entry_id}/attachments/",
+        files={"file": ("photo.png", buf.getvalue(), "image/png")},
+    )
 
 
 class TestUserController:
@@ -102,6 +117,31 @@ class TestUserController:
             assert response.status_code == 204
             names = {user["name"] for user in bob_client.get("/users/").json()}
             assert names == {bob["name"]}
+
+    def test_delete_user_removes_their_entries_and_attachments(self, app, alice, bob):
+        with TestClient(app=app) as alice_client, TestClient(app=app) as bob_client:
+            alice_id = alice_client.post("/auth/signup", json=alice).json()["id"]
+            alice_entry = create_entry(alice_client)
+            assert upload(alice_client, alice_entry).status_code == 201
+            bob_client.post("/auth/signup", json=bob)
+            bob_entry = create_entry(bob_client)
+            assert upload(bob_client, bob_entry).status_code == 201
+            root = app.state.attachment_service.storage.root
+
+            response = alice_client.delete(f"/users/{alice_id}")
+
+            assert response.status_code == 204
+            assert not (root / alice_entry).exists()
+            # Bob's entry, attachment and files are untouched.
+            [entry] = bob_client.get("/journals/").json()
+            assert entry["id"] == bob_entry
+            assert len(entry["attachments"]) == 1
+            assert (root / bob_entry).is_dir()
+
+        with TestClient(app=app) as c:
+            # Alice's email is free again: no rows of hers are left behind.
+            assert c.post("/auth/signup", json=alice).status_code == 201
+            assert c.get("/journals/").json() == []
 
     def test_delete_user_unknown_id_is_forbidden(self, client, alice):
         # The target id belongs to no one, including the caller, so the

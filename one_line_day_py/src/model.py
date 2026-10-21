@@ -27,7 +27,7 @@ class JournalEntry(SQLModel, table=True):
     __table_args__ = (UniqueConstraint("author_id", "date"),)
 
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    author_id: UUID = Field(foreign_key="users.id")
+    author_id: UUID = Field(foreign_key="users.id", ondelete="CASCADE")
     date: date
     message: str
 
@@ -44,7 +44,9 @@ class Attachment(SQLModel, table=True):
     entry_id: UUID = Field(
         foreign_key="journal_entries.id", ondelete="CASCADE", index=True
     )
-    author_id: UUID = Field(foreign_key="users.id", index=True)  # denormalized owner
+    author_id: UUID = Field(
+        foreign_key="users.id", ondelete="CASCADE", index=True
+    )  # denormalized owner
     filename: str  # original name, used only as display text
     kind: AttachmentKind
     content_type: str  # of the stored full-size content, e.g. image/webp

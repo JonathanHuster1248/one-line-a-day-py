@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.exc import NoResultFound
 
-from ..data.attachment_storage import AttachmentStorage, Variant
+from ..data.attachment_storage import TRASH_DIR, AttachmentStorage, Variant
 from ..data.db import AttachmentDb, JournalDb
 from ..exceptions import (
     AttachmentProcessingError,
@@ -207,17 +207,23 @@ class AttachmentService:
         self.storage.delete_entry(entry_id)
 
     async def sweep_orphans(self) -> None:
-        """Startup backstop: remove directories whose entry no longer exists.
+        """Startup backstop: move directories whose entry no longer exists to the trash.
 
-        Never raises, so it can't block startup.
+        Moved rather than deleted, so pointing the app at the wrong or an empty
+        database can't destroy every attachment. Never raises, so it can't block
+        startup.
         """
         try:
             on_disk = self.storage.entry_dirs()
             alive = await self.attachments_db.existing_entry_ids(on_disk)
             orphans = [entry_id for entry_id in on_disk if entry_id not in alive]
             for entry_id in orphans:
-                self.storage.delete_entry(entry_id)
+                self.storage.trash_entry(entry_id)
             if orphans:
-                logger.info("Removed %d orphaned attachment directories", len(orphans))
+                logger.warning(
+                    "Moved %d orphaned attachment directories to %s",
+                    len(orphans),
+                    self.storage.root / TRASH_DIR,
+                )
         except Exception as exc:  # noqa: BLE001 - must never raise (NFR-9)
             logger.error("Attachment orphan sweep failed: %s", type(exc).__name__)

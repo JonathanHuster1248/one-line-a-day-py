@@ -12,6 +12,9 @@ MAX_ATTACHMENTS_PER_ENTRY = 5  # keep in sync with frontend/src/config.ts
 
 
 def init_db(db_path: Path):
+    # SQLite creates the file but not its directory; a fresh DB_PATH may point
+    # somewhere that doesn't exist yet.
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     engine = create_engine(
         f"sqlite:///{db_path}",
         echo=False,
@@ -77,12 +80,22 @@ class UserDb:
 
             return user
 
-    async def delete_user(self, user_id: UUID) -> None:
+    async def delete_user(self, user_id: UUID) -> list[UUID]:
+        """Delete the user; their entries and attachment rows go via ON DELETE CASCADE.
+
+        Returns the deleted entry ids so the caller can remove their files.
+        """
         with Session(self.engine) as session:
             statement = select(User).where(User.id == user_id)
             user = session.exec(statement).one()
+            entry_ids = list(
+                session.exec(
+                    select(JournalEntry.id).where(JournalEntry.author_id == user_id)
+                )
+            )
             session.delete(user)
             session.commit()
+            return entry_ids
 
 
 class JournalDb:

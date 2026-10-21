@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import tempfile
+from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 from uuid import UUID
@@ -16,6 +17,9 @@ class Variant(StrEnum):
     DISPLAY = "display"
     PDF = "pdf"
 
+
+# Where the startup sweep moves orphaned entry directories (see TODO.md).
+TRASH_DIR = ".trash"
 
 _SUFFIXES = {
     Variant.THUMB: "thumb.webp",
@@ -77,6 +81,21 @@ class AttachmentStorage:
 
     def delete_entry(self, entry_id: UUID) -> None:
         shutil.rmtree(self._entry_dir(entry_id), ignore_errors=True)
+
+    def trash_entry(self, entry_id: UUID) -> Path:
+        """Move an entry's directory to `{root}/.trash/` instead of deleting it.
+
+        `.trash` isn't a UUID, so `entry_dirs` never reports it. A name already
+        in the trash gets a UTC timestamp suffix rather than being overwritten.
+        """
+        trash = self.root / TRASH_DIR
+        trash.mkdir(exist_ok=True)
+        target = trash / str(entry_id)
+        if target.exists():
+            stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+            target = trash / f"{entry_id}-{stamp}"
+        self._entry_dir(entry_id).rename(target)
+        return target
 
     def entry_dirs(self) -> list[UUID]:
         """Entry IDs that have a directory on disk (for the orphan sweep)."""

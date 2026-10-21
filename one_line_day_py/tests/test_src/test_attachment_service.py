@@ -11,7 +11,11 @@ import pytest
 from PIL import Image
 from sqlalchemy.exc import NoResultFound
 
-from one_line_day_py.src.data.attachment_storage import AttachmentStorage, Variant
+from one_line_day_py.src.data.attachment_storage import (
+    TRASH_DIR,
+    AttachmentStorage,
+    Variant,
+)
 from one_line_day_py.src.data.db import AttachmentDb, JournalDb, UserDb
 from one_line_day_py.src.exceptions import (
     AttachmentLimitExceeded,
@@ -213,18 +217,24 @@ def test_delete_removes_row_then_files(env: Env) -> None:
     assert not (storage.root / str(entry.id)).exists()
 
 
-def test_sweep_removes_only_orphan_directories(env: Env) -> None:
+def test_sweep_trashes_only_orphan_directories(env: Env) -> None:
     service, storage, alice, entry = env.service, env.storage, env.alice, env.entry
     run(service.add(alice.id, entry.id, "a.png", "image/png", png()))
-    orphan = uuid4()
-    storage.save(orphan, uuid4(), Variant.PDF, b"x")
+    orphan, orphan_file = uuid4(), uuid4()
+    storage.save(orphan, orphan_file, Variant.PDF, b"x")
     (storage.root / "not-a-uuid").mkdir()
 
     run(service.sweep_orphans())
 
     assert (storage.root / str(entry.id)).is_dir()
     assert not (storage.root / str(orphan)).exists()
+    trashed = storage.root / TRASH_DIR / str(orphan) / f"{orphan_file}.pdf"
+    assert trashed.read_bytes() == b"x"
     assert (storage.root / "not-a-uuid").is_dir()
+
+    # A second startup leaves the trash alone.
+    run(service.sweep_orphans())
+    assert trashed.is_file()
 
 
 def test_sweep_never_raises(

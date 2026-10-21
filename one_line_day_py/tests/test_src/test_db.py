@@ -63,6 +63,28 @@ def test_deleting_entry_cascades_to_attachments(engine):
         assert session.exec(select(Attachment)).all() == []
 
 
+def test_deleting_user_cascades_to_entries_and_attachments(engine):
+    with Session(engine) as session:
+        user, entry = _user_and_entry(session)
+        session.add(_attachment(user, entry))
+        session.commit()
+
+        session.delete(user)
+        session.commit()
+        assert session.exec(select(JournalEntry)).all() == []
+        assert session.exec(select(Attachment)).all() == []
+
+
+def test_init_db_creates_missing_parent_directories(tmp_path):
+    db_path = tmp_path / "does" / "not" / "exist" / "test.db"
+
+    engine = init_db(db_path)
+
+    with Session(engine) as session:
+        assert session.exec(select(User)).all() == []
+    assert db_path.is_file()
+
+
 def test_attachment_defaults(engine):
     with Session(engine) as session:
         user, entry = _user_and_entry(session)

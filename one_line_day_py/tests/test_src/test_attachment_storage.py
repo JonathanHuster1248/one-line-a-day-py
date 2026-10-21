@@ -3,7 +3,11 @@ from uuid import uuid4
 
 import pytest
 
-from one_line_day_py.src.data.attachment_storage import AttachmentStorage, Variant
+from one_line_day_py.src.data.attachment_storage import (
+    TRASH_DIR,
+    AttachmentStorage,
+    Variant,
+)
 from one_line_day_py.src.exceptions import StorageUnavailable
 
 
@@ -114,3 +118,20 @@ def test_root_that_is_a_file_raises_on_write(tmp_path):
     root.write_text("x")
     with pytest.raises(StorageUnavailable):
         AttachmentStorage(root).save(uuid4(), uuid4(), Variant.PDF, b"x")
+
+
+def test_trash_entry_moves_directory_and_never_overwrites(storage):
+    entry_id, first, second = uuid4(), uuid4(), uuid4()
+    storage.save(entry_id, first, Variant.PDF, b"1")
+    storage.trash_entry(entry_id)
+    storage.save(entry_id, second, Variant.PDF, b"2")
+
+    moved = storage.trash_entry(entry_id)
+
+    assert not (storage.root / str(entry_id)).exists()
+    assert moved.name.startswith(f"{entry_id}-")
+    trash = storage.root / TRASH_DIR
+    assert (trash / str(entry_id) / f"{first}.pdf").read_bytes() == b"1"
+    assert (moved / f"{second}.pdf").read_bytes() == b"2"
+    # The trash itself is never mistaken for an entry directory.
+    assert storage.entry_dirs() == []
