@@ -24,10 +24,11 @@ Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```
 mkdir -p one_line_day_py/src/data/attachments
+touch one_line_day_py/src/data/journal_entries.db
 docker compose up --build
 ```
 
-The `mkdir` is needed once, before the first run: the attachments directory is bind-mounted, and if it doesn't exist Docker creates it owned by root.
+The `mkdir` and `touch` are needed once, before the first run: the attachments directory and the SQLite file are bind-mounted, and if either doesn't exist Docker creates it owned by root (and creates the database path as a directory, not a file).
 
 - App: <http://localhost:3000>
 - API (debugging only, bound to this machine): <http://localhost:8000>
