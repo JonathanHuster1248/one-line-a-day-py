@@ -2,11 +2,11 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { JournalApp } from "./JournalApp";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../auth/AuthContext";
 import { getJournals, createJournalEntry, deleteJournalEntry, updateJournalEntry, DuplicateDateError } from "./journals";
-import type { Attachment, Journal } from "./models";
+import { jsonResponse, makeAttachment, makeFile, makeJournal } from "../test/factories";
 
-vi.mock("./AuthContext", () => ({
+vi.mock("../auth/AuthContext", () => ({
     useAuth: vi.fn(),
 }));
 
@@ -24,45 +24,11 @@ const mockedCreateJournalEntry = vi.mocked(createJournalEntry);
 const mockedDeleteJournalEntry = vi.mocked(deleteJournalEntry);
 const mockedUpdateJournalEntry = vi.mocked(updateJournalEntry);
 
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "1",
-        filename: "beach.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 640,
-        height: 480,
-        ...overrides,
-    };
-}
-
-function jsonResponse(body: unknown, status = 201): Response {
-    return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-}
-
-function makeFile(name: string): File {
-    return new File(["data"], name, { type: "image/jpeg" });
-}
-
 // Attachment uploads go through the real attachments client against this fetch.
 const fetchMock = vi.fn<typeof fetch>();
 
 function uploadedName(init: RequestInit | undefined): string {
     return ((init?.body as FormData).get("file") as File).name;
-}
-
-function makeJournal(overrides: Partial<Journal> = {}): Journal {
-    return {
-        id: "1",
-        author_id: "author-1",
-        date: "2025-07-25",
-        message: "Had a great day",
-        attachments: [],
-        attachments_available: true,
-        ...overrides,
-    };
 }
 
 describe("JournalApp", () => {

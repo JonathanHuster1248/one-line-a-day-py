@@ -1,12 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { EmailTakenError, getCurrentUser, login, logout, signup, type User } from "./auth";
-import { API_BASE_URL } from "./config";
+import { EmailTakenError, getCurrentUser, login, logout, signup } from "./auth";
+import { API_BASE_URL } from "../shared/config";
+import { jsonResponse, makeUser } from "../test/factories";
 
-const alice: User = { id: "u1", name: "Alice", email: "alice@example.com" };
-
-function jsonResponse(body: unknown, status = 200): Response {
-    return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-}
+const alice = makeUser();
 
 const fetchMock = vi.fn<typeof fetch>();
 

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { getJournals, createJournalEntry, updateJournalEntry, deleteJournalEntry, DuplicateDateError } from "./journals";
-import { uploadAttachments, type UploadResult, type UploadStatus } from "./attachments";
-import type { Attachment, Journal } from "./models";
-import { useAuth } from "./AuthContext";
+import { uploadAttachments, type UploadResult, type UploadStatus } from "../attachments/attachments";
+import type { Attachment, Journal } from "../shared/models";
+import { useAuth } from "../auth/AuthContext";
 import { JournalBox } from "./JournalBox";
-import { AttachmentPicker } from "./AttachmentPicker";
-import { UploadFailureNotice } from "./UploadFailureNotice";
-import { formatMonthDay, shiftDate, shiftYear, todayISODate } from "./date";
+import { AttachmentPicker } from "../attachments/AttachmentPicker";
+import { UploadFailureNotice } from "../attachments/UploadFailureNotice";
+import { formatMonthDay, shiftDate, shiftYear, todayISODate } from "../shared/date";
 
 export function JournalApp() {
     const { logout } = useAuth();

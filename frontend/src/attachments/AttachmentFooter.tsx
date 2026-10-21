@@ -1,5 +1,5 @@
 import { Component, useState, type ReactNode } from "react";
-import type { Attachment } from "./models";
+import type { Attachment } from "../shared/models";
 import { AttachmentThumb } from "./AttachmentThumb";
 import { AttachmentViewer } from "./AttachmentViewer";
 

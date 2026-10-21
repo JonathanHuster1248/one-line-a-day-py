@@ -3,21 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AttachmentViewer } from "./AttachmentViewer";
 import { contentUrl } from "./attachments";
-import type { Attachment } from "./models";
-
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "entry-1",
-        filename: "beach.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 2048,
-        height: 1536,
-        ...overrides,
-    };
-}
+import { makeAttachment } from "../test/factories";
 
 describe("AttachmentViewer", () => {
     const showModal = vi.fn(function (this: HTMLDialogElement) {
@@ -46,7 +32,7 @@ describe("AttachmentViewer", () => {
         expect(dialog).toHaveAttribute("open");
         expect(screen.getByRole("img", { name: "beach.jpg" })).toHaveAttribute(
             "src",
-            contentUrl("entry-1", "att-1"),
+            contentUrl("1", "att-1"),
         );
     });
 
@@ -54,7 +40,7 @@ describe("AttachmentViewer", () => {
         render(<AttachmentViewer attachment={makeAttachment()} onClose={vi.fn()} />);
 
         const link = screen.getByRole("link", { name: "Download" });
-        expect(link).toHaveAttribute("href", contentUrl("entry-1", "att-1", true));
+        expect(link).toHaveAttribute("href", contentUrl("1", "att-1", true));
         expect(link).toHaveAttribute("download");
     });
 

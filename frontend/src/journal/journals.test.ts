@@ -7,24 +7,8 @@ import {
     getJournals,
     updateJournalEntry,
 } from "./journals";
-import { API_BASE_URL } from "./config";
-import type { Journal } from "./models";
-
-function makeJournal(overrides: Partial<Journal> = {}): Journal {
-    return {
-        id: "1",
-        author_id: "author-1",
-        date: "2025-07-25",
-        message: "Had a great day",
-        attachments: [],
-        attachments_available: true,
-        ...overrides,
-    };
-}
-
-function jsonResponse(body: unknown, status = 200): Response {
-    return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-}
+import { API_BASE_URL } from "../shared/config";
+import { jsonResponse, makeJournal } from "../test/factories";
 
 const fetchMock = vi.fn<typeof fetch>();
 

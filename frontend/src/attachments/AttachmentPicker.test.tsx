@@ -4,13 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { AttachmentPicker } from "./AttachmentPicker";
 import type { UploadStatus } from "./attachments";
-import { MAX_ATTACHMENT_BYTES } from "./config";
-
-function makeFile(name: string, type = "image/jpeg", size = 10): File {
-    const file = new File(["x"], name, { type });
-    Object.defineProperty(file, "size", { value: size });
-    return file;
-}
+import { MAX_ATTACHMENT_BYTES } from "../shared/config";
+import { makeFile } from "../test/factories";
 
 // The picker is controlled; this owns the files like JournalApp/JournalBox will.
 function Harness({

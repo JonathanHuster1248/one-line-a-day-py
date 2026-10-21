@@ -1,7 +1,7 @@
 import { useState } from "react";
-import type { Attachment } from "./models";
+import type { Attachment } from "../shared/models";
 import { contentUrl, thumbnailUrl } from "./attachments";
-import { FileIcon } from "./FileIcon";
+import { FileIcon } from "../shared/FileIcon";
 
 type LoadState = "loading" | "loaded" | "error";
 

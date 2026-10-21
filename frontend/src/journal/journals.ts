@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "./config";
-import type { Journal } from "./models";
+import { API_BASE_URL } from "../shared/config";
+import type { Journal } from "../shared/models";
 
 /** The backend's 409: the user already has an entry on that date. */
 export class DuplicateDateError extends Error {

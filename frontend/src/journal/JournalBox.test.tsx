@@ -3,49 +3,16 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { JournalBox } from "./JournalBox";
 import { DuplicateDateError } from "./journals";
-import { AttachmentThumb } from "./AttachmentThumb";
-import type { Attachment, Journal } from "./models";
+import { AttachmentThumb } from "../attachments/AttachmentThumb";
+import type { Attachment, Journal } from "../shared/models";
+import { jsonResponse, makeAttachment, makeFile, makeJournal } from "../test/factories";
 
-vi.mock("./AttachmentThumb", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("./AttachmentThumb")>();
+vi.mock("../attachments/AttachmentThumb", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../attachments/AttachmentThumb")>();
     return { AttachmentThumb: vi.fn(actual.AttachmentThumb) };
 });
 
 const mockedThumb = vi.mocked(AttachmentThumb);
-
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "1",
-        filename: "beach.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 640,
-        height: 480,
-        ...overrides,
-    };
-}
-
-function makeJournal(overrides: Partial<Journal> = {}): Journal {
-    return {
-        id: "1",
-        author_id: "author-1",
-        date: "2025-07-25",
-        message: "Had a great day",
-        attachments: [],
-        attachments_available: true,
-        ...overrides,
-    };
-}
-
-function jsonResponse(body: unknown, status = 201): Response {
-    return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-}
-
-function makeFile(name: string): File {
-    return new File(["data"], name, { type: "image/jpeg" });
-}
 
 const fetchMock = vi.fn<typeof fetch>();
 

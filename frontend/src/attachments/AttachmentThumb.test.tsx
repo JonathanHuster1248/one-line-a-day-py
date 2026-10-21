@@ -2,21 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AttachmentThumb } from "./AttachmentThumb";
-import type { Attachment } from "./models";
-
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "entry-1",
-        filename: "beach.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 2048,
-        height: 1536,
-        ...overrides,
-    };
-}
+import { makeAttachment } from "../test/factories";
 
 describe("AttachmentThumb", () => {
     it("shows a skeleton until the lazy thumbnail loads", () => {
@@ -24,7 +10,7 @@ describe("AttachmentThumb", () => {
 
         const img = screen.getByRole("img", { name: "beach.jpg" });
         expect(img).toHaveAttribute("loading", "lazy");
-        expect(img.getAttribute("src")).toMatch(/\/journals\/entry-1\/attachments\/att-1\/thumbnail$/);
+        expect(img.getAttribute("src")).toMatch(/\/journals\/1\/attachments\/att-1\/thumbnail$/);
         expect(screen.getByTestId("attachment-skeleton")).toBeInTheDocument();
         expect(img).toHaveClass("is-loading");
     });
@@ -95,7 +81,7 @@ describe("AttachmentThumb", () => {
         );
 
         const link = screen.getByRole("link", { name: "ticket.pdf" });
-        expect(link.getAttribute("href")).toMatch(/\/journals\/entry-1\/attachments\/att-1\/content$/);
+        expect(link.getAttribute("href")).toMatch(/\/journals\/1\/attachments\/att-1\/content$/);
         expect(link).toHaveAttribute("target", "_blank");
         expect(link).toHaveAttribute("rel", "noopener noreferrer");
         expect(link).toHaveClass("attachment-thumb");

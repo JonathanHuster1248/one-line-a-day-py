@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AttachmentFooter } from "./AttachmentFooter";
 import { AttachmentThumb } from "./AttachmentThumb";
-import type { Attachment } from "./models";
+import { makeAttachment } from "../test/factories";
 
 vi.mock("./AttachmentThumb", async (importOriginal) => {
     const actual = await importOriginal<typeof import("./AttachmentThumb")>();
@@ -11,20 +11,6 @@ vi.mock("./AttachmentThumb", async (importOriginal) => {
 });
 
 const mockedThumb = vi.mocked(AttachmentThumb);
-
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "entry-1",
-        filename: "beach.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 2048,
-        height: 1536,
-        ...overrides,
-    };
-}
 
 describe("AttachmentFooter", () => {
     beforeEach(() => {

@@ -6,35 +6,10 @@ import {
     uploadAttachment,
     uploadAttachments,
 } from "./attachments";
-import { API_BASE_URL } from "./config";
-import type { Attachment } from "./models";
+import { API_BASE_URL } from "../shared/config";
+import { jsonResponse, makeAttachment, makeFile } from "../test/factories";
 
 const BASE = `${API_BASE_URL}/journals/entry-1/attachments`;
-
-function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
-    return {
-        id: "att-1",
-        entry_id: "entry-1",
-        filename: "photo.jpg",
-        kind: "image",
-        content_type: "image/webp",
-        has_thumbnail: true,
-        width: 640,
-        height: 480,
-        ...overrides,
-    };
-}
-
-function jsonResponse(body: unknown, status = 201): Response {
-    return new Response(JSON.stringify(body), {
-        status,
-        headers: { "Content-Type": "application/json" },
-    });
-}
-
-function makeFile(name: string): File {
-    return new File(["data"], name, { type: "image/jpeg" });
-}
 
 const fetchMock = vi.fn<typeof fetch>();
 
