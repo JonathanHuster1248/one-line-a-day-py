@@ -6,6 +6,7 @@ from one_line_day_py.src.exceptions import (
     AttachmentLimitExceeded,
     AttachmentProcessingError,
     AttachmentTooLarge,
+    DuplicateEntryDate,
     StorageUnavailable,
     UnsupportedAttachmentType,
     exception_handlers,
@@ -20,6 +21,7 @@ from one_line_day_py.src.exceptions import (
         (UnsupportedAttachmentType, 415),
         (AttachmentProcessingError, 422),
         (StorageUnavailable, 503),
+        (DuplicateEntryDate, 409),
     ],
 )
 def test_domain_exception_maps_to_status(exc_type, status):

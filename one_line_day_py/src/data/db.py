@@ -3,12 +3,24 @@ from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import event, extract
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, SQLModel, col, create_engine, func, select
 
-from ..exceptions import AttachmentLimitExceeded
+from ..exceptions import AttachmentLimitExceeded, DuplicateEntryDate
 from ..model import Attachment, JournalEntry, User
 
 MAX_ATTACHMENTS_PER_ENTRY = 5  # keep in sync with frontend/src/config.ts
+
+
+def _commit_entry(session: Session) -> None:
+    """Commit, turning a clash on the (author_id, date) unique constraint into a domain error."""
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        if "UNIQUE" in str(exc.orig):
+            raise DuplicateEntryDate() from exc
+        raise
 
 
 def init_db(db_path: Path):
@@ -103,10 +115,9 @@ class JournalDb:
         self.engine = init_db(db_path)
 
     async def add_entry(self, entry: JournalEntry) -> JournalEntry:
-        # TODO: Raise a 400 error when we get an integrety issue (author id not found or author id and date already exist)
         with Session(self.engine) as session:
             session.add(entry)
-            session.commit()
+            _commit_entry(session)
             session.refresh(entry)
             return entry
 
@@ -138,12 +149,6 @@ class JournalDb:
             entry = session.exec(statement).one()
             return entry
 
-    async def get_entry_author(self, entry_id: UUID) -> UUID:
-        with Session(self.engine) as session:
-            statement = select(JournalEntry).where(JournalEntry.id == entry_id)
-            entry = session.exec(statement).one()
-            return entry.author_id
-
     async def update_entry(
         self,
         entry_id: UUID,
@@ -159,7 +164,7 @@ class JournalDb:
             if message is not None:
                 entry.message = message
 
-            session.commit()
+            _commit_entry(session)
             session.refresh(entry)
 
             return entry
