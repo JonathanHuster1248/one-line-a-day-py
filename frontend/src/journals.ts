@@ -1,8 +1,21 @@
 import { API_BASE_URL } from "./config";
 import type { Journal } from "./models";
 
+/** The backend's 409: the user already has an entry on that date. */
+export class DuplicateDateError extends Error {
+    constructor() {
+        super("You already have an entry for that date.");
+        this.name = "DuplicateDateError";
+    }
+}
+
 export async function getJournal(id: string): Promise<Journal> {
     const response = await fetch(`${API_BASE_URL}/journals/${id}`, { credentials: "include" });
+
+    if (!response.ok) {
+        throw new Error(`Failed to load journal entry: ${response.status}`);
+    }
+
     return (await response.json()) as Journal;
 }
 
@@ -34,6 +47,9 @@ export async function createJournalEntry(date: string, message: string): Promise
         credentials: "include",
     });
 
+    if (response.status === 409) {
+        throw new DuplicateDateError();
+    }
     if (!response.ok) {
         throw new Error(`Failed to create journal entry: ${response.status}`);
     }
@@ -52,6 +68,9 @@ export async function updateJournalEntry(id: string, date: string, message: stri
         credentials: "include",
     });
 
+    if (response.status === 409) {
+        throw new DuplicateDateError();
+    }
     if (!response.ok) {
         throw new Error(`Failed to update journal entry: ${response.status}`);
     }

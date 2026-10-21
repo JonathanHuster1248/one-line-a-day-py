@@ -6,6 +6,14 @@ export interface User {
     email: string;
 }
 
+/** The backend's 409 on signup: an account already uses that email. */
+export class EmailTakenError extends Error {
+    constructor() {
+        super("That email is already registered.");
+        this.name = "EmailTakenError";
+    }
+}
+
 async function parseUserOrThrow(response: Response, failureMessage: string): Promise<User> {
     if (!response.ok) {
         throw new Error(failureMessage);
@@ -21,6 +29,9 @@ export async function signup(name: string, email: string, password: string): Pro
         body: JSON.stringify({ name, email, password }),
     });
 
+    if (response.status === 409) {
+        throw new EmailTakenError();
+    }
     return parseUserOrThrow(response, "Failed to sign up");
 }
 

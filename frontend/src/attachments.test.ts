@@ -80,9 +80,11 @@ describe("uploadAttachment", () => {
 
     it.each([
         [400, "maximum number of attachments"],
+        [404, "no longer exists"],
         [413, "too large"],
         [415, "isn't supported"],
         [422, "couldn't be processed"],
+        [503, "storage is unavailable"],
         [500, "Upload failed: 500"],
     ])("throws a readable error for status %i", async (status, message) => {
         fetchMock.mockResolvedValue(new Response(null, { status }));

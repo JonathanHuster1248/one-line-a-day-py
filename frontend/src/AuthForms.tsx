@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
+import { EmailTakenError } from "./auth";
 
 export function AuthForms() {
     const [mode, setMode] = useState<"login" | "signup">("login");
@@ -20,8 +21,12 @@ export function AuthForms() {
             } else {
                 await signup(name, email, password);
             }
-        } catch {
-            setError(mode === "login" ? "Invalid email or password" : "Failed to sign up");
+        } catch (error) {
+            if (error instanceof EmailTakenError) {
+                setError(error.message);
+            } else {
+                setError(mode === "login" ? "Invalid email or password" : "Failed to sign up");
+            }
         } finally {
             setIsSubmitting(false);
         }
